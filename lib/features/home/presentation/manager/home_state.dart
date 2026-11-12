@@ -4,6 +4,7 @@ import 'package:fitness_app/features/auth/domain/entities/login_entity/user_enti
 import 'package:fitness_app/features/exercise/domain/entities/muscles_by_group_entity.dart';
 import 'package:fitness_app/features/meals/domain/entities/meal_category_entity.dart';
 
+import '../../../exercise/domain/entities/muscle_group_entity.dart';
 import '../../../exercise/domain/entities/muscle_groups_entity.dart';
 import '../../domain/entities/popular_training_entity.dart';
 
@@ -56,4 +57,7 @@ class HomeState extends Equatable {
     popularTrainingState,
     selectedGroupId,
   ];
+  MuscleGroupEntity? get selectedGroup => muscleGroupsState.data?.musclesGroup
+      .where((group) => group.id == selectedGroupId)
+      .firstOrNull;
 }

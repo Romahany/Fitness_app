@@ -62,19 +62,24 @@ class HomePopularTraining extends StatelessWidget {
                     height: 176,
                     itemCount: trainings.length,
                     itemBuilder: (context, index) =>
-                        _card(context, trainings[index]),
+                        _TrainingCard(training: trainings[index]),
                   );
                 },
               ),
         ),
       ],
     );
-  }
+  }}
 
-  Widget _card(BuildContext context, PopularTrainingEntity training) {
-    final l10n = AppLocalizations.of(context)!;
+  class _TrainingCard extends StatelessWidget {
 
-    return Material(
+    const _TrainingCard({required this.training});
+    final PopularTrainingEntity training;
+
+@override
+Widget build(BuildContext context) {
+final l10n = AppLocalizations.of(context)!;
+return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(20.r),
       clipBehavior: Clip.antiAlias,
@@ -91,7 +96,7 @@ class HomePopularTraining extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              homeNetworkImage(training.muscleImage),
+              HomeNetworkImage(url:  training.muscleImage),
               const ColoredBox(color: AppColors.scrim),
               Positioned(
                 top: 96.h,
@@ -107,7 +112,6 @@ class HomePopularTraining extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        fontFamily: 'Baloo Thambi 2',
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
                         height: 1.2,
@@ -125,19 +129,17 @@ class HomePopularTraining extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _pill(
-                      context,
-                      l10n.tasksCount(training.totalExercises),
-                      FontWeight.w400,
-                      AppColors.textPrimary,
+                    _Pill(
+                      text:l10n.tasksCount(training.totalExercises),
+                      weight:FontWeight.w400,
+                      color:AppColors.textPrimary,
                     ),
                     SizedBox(width: 8.w),
                     Flexible(
-                      child: _pill(
-                        context,
-                        training.difficultyLevelName.trim(),
-                        FontWeight.w700,
-                        AppColors.primary,
+                      child: _Pill(
+                        text: training.difficultyLevelName.trim(),
+                       weight: FontWeight.w700,
+                        color: AppColors.primary,
                       ),
                     ),
                   ],
@@ -148,14 +150,15 @@ class HomePopularTraining extends StatelessWidget {
         ),
       ),
     );
-  }
+  }}
 
-  Widget _pill(
-    BuildContext context,
-    String text,
-    FontWeight weight,
-    Color color,
-  ) {
+  class _Pill extends StatelessWidget {
+const _Pill({ required this.text, required this.weight, required this.color});
+    final String text;
+    final FontWeight weight;
+    final Color color;
+   @override
+Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(20.r),
       child: CustomBlurEffect(
@@ -173,7 +176,6 @@ class HomePopularTraining extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontFamily: 'Baloo Thambi 2',
                     fontSize: 12.sp,
                     fontWeight: weight,
                     height: 1.2,
@@ -188,3 +190,4 @@ class HomePopularTraining extends StatelessWidget {
     );
   }
 }
+

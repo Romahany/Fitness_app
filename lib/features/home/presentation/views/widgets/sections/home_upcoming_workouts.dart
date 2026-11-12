@@ -35,6 +35,10 @@ class HomeUpcomingWorkouts extends StatelessWidget {
         ),
         SizedBox(height: 8.h),
         BlocBuilder<HomeCubit, HomeState>(
+          buildWhen: (previous, current) =>
+              previous.muscleGroupsState != current.muscleGroupsState ||
+              previous.groupMusclesState != current.groupMusclesState ||
+              previous.selectedGroupId != current.selectedGroupId,
           builder: (context, state) {
             final cubit = context.read<HomeCubit>();
 
@@ -47,21 +51,14 @@ class HomeUpcomingWorkouts extends StatelessWidget {
                   loading: const HomeTabBarShimmer(),
                   onRetry: () => cubit.onEvent(const HomeMuscleGroupsRetried()),
                   builder: (context, data) {
-                    // The API can return the same group name twice; keep the first.
-                    final seen = <String>{};
-                    final groups = data.musclesGroup
-                        .where((group) => seen.add(group.name))
-                        .toList();
-                    final selected = groups
-                        .where((group) => group.id == state.selectedGroupId)
-                        .firstOrNull;
-
                     return CategoryTabBar(
                       height: 38,
-                      categories: groups.map((group) => group.name).toList(),
-                      selectedCategory: selected?.name ?? '',
+                      categories: data.musclesGroup
+                          .map((group) => group.name)
+                          .toList(),
+                      selectedCategory: state.selectedGroup?.name ?? '',
                       onCategorySelected: (name) {
-                        final group = groups
+                        final group = data.musclesGroup
                             .where((group) => group.name == name)
                             .firstOrNull;
                         if (group != null) {

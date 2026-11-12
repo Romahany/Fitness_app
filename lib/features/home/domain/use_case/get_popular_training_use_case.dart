@@ -26,15 +26,18 @@ class GetPopularTrainingUseCase {
     );
 
     final trainings = <PopularTrainingEntity>[];
+    Error<List<PopularTrainingEntity>>? firstError;
     for (final result in results) {
       switch (result) {
         case Success():
           final training = result.data;
           if (training != null) trainings.add(training);
         case Error():
-          return Error<List<PopularTrainingEntity>>(result.failure);
+          firstError ??= Error<List<PopularTrainingEntity>>(result.failure);
       }
     }
+
+    if (trainings.isEmpty && firstError != null) return firstError;
     return Success<List<PopularTrainingEntity>>(trainings);
   }
 

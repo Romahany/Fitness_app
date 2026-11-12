@@ -9,7 +9,22 @@ class GetMuscleGroupsUseCase {
 
   GetMuscleGroupsUseCase(this._repo);
 
-  Future<BaseResponse<MuscleGroupsEntity>> call() {
-    return _repo.getMusclesGroups();
+  Future<BaseResponse<MuscleGroupsEntity>> call() async {
+    final result = await _repo.getMusclesGroups();
+    switch (result) {
+      case Success():
+        final seen = <String>{};
+        final groups = result.data.musclesGroup
+            .where((group) => seen.add(group.name))
+            .toList();
+        return Success(
+          MuscleGroupsEntity(
+            message: result.data.message,
+            musclesGroup: groups,
+          ),
+        );
+      case Error():
+        return result;
+    }
   }
 }

@@ -105,21 +105,14 @@ class _Header extends StatelessWidget {
               Text(
                 l10n.homeGreeting(firstName),
                 style: textTheme.bodyMedium?.copyWith(
-                  fontFamily: 'Baloo Thambi 2',
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w500,
-                  height: 1.4,
-                  color: AppColors.textPrimary,
                 ),
               ),
               Text(
                 l10n.homeSubtitle,
                 style: textTheme.bodyLarge?.copyWith(
-                  fontFamily: 'Baloo Thambi 2',
-                  fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
-                  height: 1.4,
-                  color: AppColors.textPrimary,
                 ),
               ),
             ],

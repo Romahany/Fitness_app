@@ -33,7 +33,7 @@ class HomeImageCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              homeNetworkImage(imageUrl),
+              HomeNetworkImage(url: imageUrl),
               Positioned(
                 left: 0,
                 right: 0,
@@ -68,16 +68,26 @@ class HomeImageCard extends StatelessWidget {
   }
 }
 
-Widget homeNetworkImage(String? url, {Widget? onError}) {
-  if (url == null || url.isEmpty) return _placeholder();
-  return Image.network(
-    url,
-    fit: BoxFit.cover,
-    errorBuilder: (_, _, _) => onError ?? _placeholder(),
+class HomeNetworkImage extends StatelessWidget {
+  const HomeNetworkImage({required this.url,this.onError ,super.key});
+  final String? url;
+  final Widget? onError;
+  @override
+Widget build(BuildContext context) {
+    final imageUrl = url;
+    if (imageUrl == null || imageUrl.isEmpty) return const _Placeholder();
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+    errorBuilder: (_, _, _) => onError ?? _Placeholder(),
   );
+  }
 }
 
-Widget _placeholder() {
+class _Placeholder extends StatelessWidget {
+  const _Placeholder();
+  @override
+  Widget build(BuildContext context) {
   return ColoredBox(
     color: AppColors.surfaceMuted,
     child: Icon(
@@ -85,5 +95,5 @@ Widget _placeholder() {
       color: AppColors.textSecondary,
       size: 24.r,
     ),
-  );
+  );}
 }
