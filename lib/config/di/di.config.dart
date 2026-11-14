@@ -48,14 +48,24 @@ import '../../features/auth/presentation/login/manager/login_cubit.dart'
     as _i889;
 import '../../features/auth/presentation/register/manager/register_cubit.dart'
     as _i784;
-<<<<<<< HEAD
+import '../../features/chat/api/chat_api_client.dart' as _i998;
+import '../../features/chat/data/datasource/firestore/chat_firestore_data_source.dart'
+    as _i1064;
+import '../../features/chat/data/datasource/firestore/chat_firestore_data_source_impl.dart'
+    as _i1038;
 import '../../features/chat/data/datasource/local/catalog_local_data_source.dart'
     as _i872;
 import '../../features/chat/data/datasource/local/catalog_local_data_source_impl.dart'
     as _i157;
+import '../../features/chat/data/datasource/remote/chat_remote_data_source.dart'
+    as _i487;
+import '../../features/chat/data/datasource/remote/chat_remote_data_source_impl.dart'
+    as _i393;
 import '../../features/chat/data/repository/catalog_repository_impl.dart'
     as _i204;
+import '../../features/chat/data/repository/chat_repository_impl.dart' as _i88;
 import '../../features/chat/domain/repository/catalog_repository.dart' as _i139;
+import '../../features/chat/domain/repository/chat_repository.dart' as _i477;
 import '../../features/exercise/api/client/exercise_api_client.dart' as _i248;
 import '../../features/exercise/api/remote/exercise_remote_data_source_impl.dart'
     as _i670;
@@ -76,19 +86,6 @@ import '../../features/exercise/presentation/exercise_details/manager/exercise_d
     as _i944;
 import '../../features/exercise/presentation/workout_categories/manager/workout_categories_cubit.dart'
     as _i355;
-=======
-import '../../features/chat/api/chat_api_client.dart' as _i998;
-import '../../features/chat/data/datasource/firestore/chat_firestore_data_source.dart'
-    as _i1064;
-import '../../features/chat/data/datasource/firestore/chat_firestore_data_source_impl.dart'
-    as _i1038;
-import '../../features/chat/data/datasource/remote/chat_remote_data_source.dart'
-    as _i487;
-import '../../features/chat/data/datasource/remote/chat_remote_data_source_impl.dart'
-    as _i393;
-import '../../features/chat/data/repository/chat_repository_impl.dart' as _i88;
-import '../../features/chat/domain/repository/chat_repository.dart' as _i477;
->>>>>>> feature/chat-chatrepo
 import '../../features/meals/api/client/meals_api_client.dart' as _i293;
 import '../../features/meals/api/remote/meals_remote_data_source_impl.dart'
     as _i669;
@@ -125,12 +122,8 @@ import '../../features/profile/presentation/manager/profile_cubit.dart'
 import '../dio/app_interceptor.dart' as _i264;
 import '../dio/dio_module.dart' as _i977;
 import '../utils/secure_storage_module.dart' as _i327;
-<<<<<<< HEAD
 import 'app_module.dart' as _i461;
-=======
-import 'app_module.dart' as _i460;
 import 'firebase_module.dart' as _i616;
->>>>>>> feature/chat-chatrepo
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
@@ -152,10 +145,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i558.FlutterSecureStorage>(
       () => secureStorageModule.secureStorage,
     );
-<<<<<<< HEAD
-    gh.lazySingleton<_i760.AppAuthCubit>(() => _i760.AppAuthCubit());
     gh.lazySingleton<_i145.DatabaseStorageService>(
       () => _i8.DatabaseStorageServiceImpl(),
+    );
+    gh.lazySingleton<_i760.AppAuthCubit>(
+      () => _i760.AppAuthCubit(gh<_i558.FlutterSecureStorage>()),
     );
     gh.lazySingleton<_i450.AppLocaleCubit>(
       () => _i450.AppLocaleCubit(gh<_i558.FlutterSecureStorage>()),
@@ -165,23 +159,11 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i994.MealsDatabase>(
       () => _i994.MealsDatabase(gh<_i145.DatabaseStorageService>()),
-=======
-    gh.lazySingleton<_i760.AppAuthCubit>(
-      () => _i760.AppAuthCubit(gh<_i558.FlutterSecureStorage>()),
->>>>>>> feature/chat-chatrepo
     );
     gh.lazySingleton<_i361.Dio>(
       () => dioModule.mealDio(),
       instanceName: 'mealDio',
     );
-<<<<<<< HEAD
-    gh.lazySingleton<_i872.CatalogLocalDataSource>(
-      () => _i157.CatalogLocalDataSourceImpl(
-        gh<_i427.ExercisesDatabase>(),
-        gh<_i994.MealsDatabase>(),
-      ),
-    );
-=======
     gh.lazySingleton<_i361.Dio>(
       () => dioModule.ollamaDio,
       instanceName: 'ollamaDio',
@@ -189,17 +171,15 @@ extension GetItInjectableX on _i174.GetIt {
     gh.singleton<_i998.ChatApiClient>(
       () => _i998.ChatApiClient(gh<_i361.Dio>(instanceName: 'ollamaDio')),
     );
-    gh.factory<_i773.MealsCubit>(
-      () => _i773.MealsCubit(
-        gh<dynamic>(),
-        gh<_i385.GetMealsByCategoryUseCase>(),
-        gh<_i514.GetMealDetailsUseCase>(),
-      ),
-    );
     gh.factory<_i1064.ChatFirestoreDataSource>(
       () => _i1038.ChatFirestoreDataSourceImpl(gh<_i974.FirebaseFirestore>()),
     );
->>>>>>> feature/chat-chatrepo
+    gh.lazySingleton<_i872.CatalogLocalDataSource>(
+      () => _i157.CatalogLocalDataSourceImpl(
+        gh<_i427.ExercisesDatabase>(),
+        gh<_i994.MealsDatabase>(),
+      ),
+    );
     gh.lazySingleton<_i264.AppInterceptors>(
       () => _i264.AppInterceptors(
         gh<_i558.FlutterSecureStorage>(),
@@ -226,7 +206,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.singleton<_i213.AuthApiClient>(
       () => _i213.AuthApiClient(gh<_i361.Dio>(instanceName: 'fitnessDio')),
     );
-<<<<<<< HEAD
     gh.singleton<_i248.ExerciseApiClient>(
       () => _i248.ExerciseApiClient(gh<_i361.Dio>(instanceName: 'fitnessDio')),
     );
@@ -236,15 +215,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i299.ProfileRemoteDataSource>(
       () => _i924.ProfileRemoteDataSourceImpl(gh<_i418.ProfileApiClient>()),
     );
+    gh.factory<_i487.ChatRemoteDataSource>(
+      () => _i393.ChatRemoteDataSourceImpl(gh<_i998.ChatApiClient>()),
+    );
     gh.factory<_i364.ProfileRepo>(
       () => _i481.ProfileRepoImpl(
         gh<_i299.ProfileRemoteDataSource>(),
         gh<_i558.FlutterSecureStorage>(),
       ),
-=======
-    gh.factory<_i487.ChatRemoteDataSource>(
-      () => _i393.ChatRemoteDataSourceImpl(gh<_i998.ChatApiClient>()),
->>>>>>> feature/chat-chatrepo
     );
     gh.factory<_i452.MealsRemoteDataSource>(
       () => _i669.MealsRemoteDataSourceImpl(
@@ -273,7 +251,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i1032.GetMealsCategoriesUseCase>(
       () => _i1032.GetMealsCategoriesUseCase(gh<_i749.MealsRepo>()),
     );
-<<<<<<< HEAD
     gh.factory<_i40.ProfileChangePasswordUseCase>(
       () => _i40.ProfileChangePasswordUseCase(gh<_i364.ProfileRepo>()),
     );
@@ -285,18 +262,16 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i1027.ProfileUpdateUseCase>(
       () => _i1027.ProfileUpdateUseCase(gh<_i364.ProfileRepo>()),
-=======
+    );
     gh.factory<_i477.ChatRepository>(
       () => _i88.ChatRepositoryImpl(
         gh<_i1064.ChatFirestoreDataSource>(),
         gh<_i487.ChatRemoteDataSource>(),
       ),
->>>>>>> feature/chat-chatrepo
     );
     gh.factory<_i514.GetMealDetailsUseCase>(
       () => _i514.GetMealDetailsUseCase(gh<_i749.MealsRepo>()),
     );
-<<<<<<< HEAD
     gh.factory<_i171.AuthRepo>(
       () => _i279.AuthRepoImpl(gh<_i548.AuthRemoteDataSource>()),
     );
@@ -335,12 +310,6 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i355.WorkoutCategoriesCubit(
         gh<_i593.GetMuscleGroupsUseCase>(),
         gh<_i559.GetMusclesByGroupUseCase>(),
-=======
-    gh.factory<_i548.AuthRemoteDataSource>(
-      () => _i981.AuthDataSourceSwitcher(
-        authRemoteDataSourceImpl: gh<_i192.AuthRemoteDataSourceImpl>(),
-        authFackDataSourceImpl: gh<_i508.AuthFakeRemoteDataSourceImpl>(),
->>>>>>> feature/chat-chatrepo
       ),
     );
     gh.factory<_i332.ChangePasswordCubit>(
@@ -352,13 +321,8 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i685.GetExercisesUseCase>(),
       ),
     );
-<<<<<<< HEAD
-    gh.factory<_i1038.LoginUseCase>(
-      () => _i1038.LoginUseCase(gh<_i171.AuthRepo>()),
-=======
     gh.factory<_i1039.LoginUseCase>(
-      () => _i1039.LoginUseCase(gh<_i170.AuthRepo>()),
->>>>>>> feature/chat-chatrepo
+      () => _i1039.LoginUseCase(gh<_i171.AuthRepo>()),
     );
     gh.factory<_i839.ForgetPasswordUserCase>(
       () => _i839.ForgetPasswordUserCase(authRepo: gh<_i171.AuthRepo>()),
