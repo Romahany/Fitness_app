@@ -1,4 +1,3 @@
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:fitness_app/config/di/di.dart';
 import 'package:fitness_app/config/routing/app_routes.dart';
@@ -18,9 +17,7 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   configureDependencies();
   await getIt<AppAuthCubit>().restoreUserId();
@@ -57,28 +54,24 @@ class FitnessApp extends StatelessWidget {
                   ),
                 );
 
-                      Navigator.of(context).pushNamedAndRemoveUntil(
-                        AppRoutes.login,
-                        (route) => false,
-                      );
-                    }
-                  },
-                  child: child!,
-                );
-              },
-              theme: AppTheme.lightTheme,
-              localizationsDelegates: [
-                AppLocalizations.delegate,
-                ...GlobalMaterialLocalizations.delegates,
-              ],
-              supportedLocales: AppLocalizations.supportedLocales,
-              debugShowCheckedModeBanner: false,
-              title: 'Fitness App',
-              initialRoute: AppRoutes.main,
-              onGenerateRoute: GenerateRoutes.generateRoute,
-            );
-          },
-        ),
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
+              }
+            },
+            child: child!,
+          );
+        },
+        theme: AppTheme.lightTheme,
+        localizationsDelegates: [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        debugShowCheckedModeBanner: false,
+        title: 'Fitness App',
+        initialRoute: AppRoutes.main,
+        onGenerateRoute: GenerateRoutes.generateRoute,
       ),
     );
   }

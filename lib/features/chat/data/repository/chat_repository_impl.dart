@@ -187,7 +187,6 @@ Future<BaseResponse<ChatResponseEntity>> requestStructuredCoachResponse({
     return switch (apiResult) {
       Success(data: final response) => Success(response.toEntity()),
       Error(failure: final failure) => Error(failure),
-      _ => throw StateError('Unexpected chat response state.'),
     };
   }
 
