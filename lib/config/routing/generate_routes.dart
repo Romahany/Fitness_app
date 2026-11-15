@@ -22,7 +22,6 @@ import 'package:fitness_app/features/workouts/presentation/views/workouts_view.d
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../features/profile/domain/entities/profile_entity.dart';
 import '../../features/profile/presentation/edit_profile/manager/edit_profile_cubit.dart';
 import '../../features/profile/presentation/edit_profile/manager/edit_profile_event.dart';
 
