@@ -21,10 +21,10 @@ class EditProfileCubit extends BaseCubit<EditProfileState, CommonUiEvent> {
   final ImagePickerService _imagePickerService;
 
   EditProfileCubit(
-      this._updateUseCase,
-      this._uploadPhotoUseCase,
-      this._imagePickerService,
-      ) : super(const EditProfileState());
+    this._updateUseCase,
+    this._uploadPhotoUseCase,
+    this._imagePickerService,
+  ) : super(const EditProfileState());
 
   Future<void> doEvent(EditProfileEvent event) async {
     switch (event) {
@@ -81,7 +81,9 @@ class EditProfileCubit extends BaseCubit<EditProfileState, CommonUiEvent> {
     }
 
     emit(
-      state.copyWith(saveState: const BaseState<ProfileEntity>(isLoading: true)),
+      state.copyWith(
+        saveState: const BaseState<ProfileEntity>(isLoading: true),
+      ),
     );
 
     ProfileEntity? saved;
@@ -128,5 +130,6 @@ class EditProfileCubit extends BaseCubit<EditProfileState, CommonUiEvent> {
       ),
     );
     emitEvent(ShowFailureMessage(failure));
+    emitEvent(const PopRoute());
   }
 }
