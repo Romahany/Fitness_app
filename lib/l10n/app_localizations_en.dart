@@ -732,4 +732,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataNotAvailable => 'Data is currently unavailable.';
+
+  @override
+  String failedToBuildPopularTraining(String muscleName) {
+    return 'Failed to build popular training for $muscleName';
+  }
 }

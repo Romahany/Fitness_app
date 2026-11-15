@@ -1471,6 +1471,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Data is currently unavailable.'**
   String get dataNotAvailable;
+
+  /// No description provided for @failedToBuildPopularTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to build popular training for {muscleName}'**
+  String failedToBuildPopularTraining(String muscleName);
 }
 
 class _AppLocalizationsDelegate

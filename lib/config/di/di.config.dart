@@ -63,6 +63,7 @@ import '../../features/exercise/presentation/exercise_details/manager/exercise_d
     as _i944;
 import '../../features/exercise/presentation/workout_categories/manager/workout_categories_cubit.dart'
     as _i355;
+import '../../features/home/domain/services/random_service.dart' as _i922;
 import '../../features/home/domain/use_case/get_popular_training_use_case.dart'
     as _i384;
 import '../../features/home/presentation/manager/home_cubit.dart' as _i629;
@@ -114,6 +115,7 @@ extension GetItInjectableX on _i174.GetIt {
     final appModule = _$AppModule();
     final secureStorageModule = _$SecureStorageModule();
     final dioModule = _$DioModule();
+    gh.singleton<_i922.RandomService>(() => _i922.RandomService());
     gh.lazySingleton<_i281.AssetBundle>(() => appModule.assetBundle);
     gh.lazySingleton<_i558.FlutterSecureStorage>(
       () => secureStorageModule.secureStorage,
@@ -203,6 +205,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i1027.ProfileUpdateUseCase>(
       () => _i1027.ProfileUpdateUseCase(gh<_i364.ProfileRepo>()),
     );
+    gh.factory<_i384.GetPopularTrainingUseCase>(
+      () => _i384.GetPopularTrainingUseCase(
+        gh<_i628.ExerciseRepo>(),
+        gh<_i922.RandomService>(),
+      ),
+    );
     gh.factory<_i514.GetMealDetailsUseCase>(
       () => _i514.GetMealDetailsUseCase(gh<_i749.MealsRepo>()),
     );
@@ -235,9 +243,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i423.GetRandomMusclesUseCase>(
       () => _i423.GetRandomMusclesUseCase(gh<_i628.ExerciseRepo>()),
-    );
-    gh.factory<_i384.GetPopularTrainingUseCase>(
-      () => _i384.GetPopularTrainingUseCase(gh<_i628.ExerciseRepo>()),
     );
     gh.factory<_i355.WorkoutCategoriesCubit>(
       () => _i355.WorkoutCategoriesCubit(

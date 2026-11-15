@@ -305,6 +305,13 @@
   "tryAgain": "Try again",
   "noCategoriesAvailable": "No categories available",
   "couldNotLoadCategories": "Could not load categories",
-  "dataNotAvailable": "Data is currently unavailable."
-
+  "dataNotAvailable": "Data is currently unavailable.",
+  "failedToBuildPopularTraining": "Failed to build popular training for {muscleName}",
+  "@failedToBuildPopularTraining": {
+    "placeholders": {
+      "muscleName": {
+        "type": "String"
+      }
+    }
+  }
 }

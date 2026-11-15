@@ -727,4 +727,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get dataNotAvailable => 'البيانات غير متوفرة حالياً.';
+
+  @override
+  String failedToBuildPopularTraining(String muscleName) {
+    return 'فشل بناء التدريب الشائع لـ $muscleName';
+  }
 }
