@@ -66,6 +66,8 @@ import '../../features/chat/data/repository/catalog_repository_impl.dart'
 import '../../features/chat/data/repository/chat_repository_impl.dart' as _i88;
 import '../../features/chat/domain/repository/catalog_repository.dart' as _i139;
 import '../../features/chat/domain/repository/chat_repository.dart' as _i477;
+import '../../features/chat/domain/use_cases/send_message_use_case.dart'
+    as _i461;
 import '../../features/chat/presentation/view/widget/prefrence_borading_chat.dart'
     as _i982;
 import '../../features/exercise/api/client/exercise_api_client.dart' as _i248;
@@ -124,7 +126,7 @@ import '../../features/profile/presentation/manager/profile_cubit.dart'
 import '../dio/app_interceptor.dart' as _i264;
 import '../dio/dio_module.dart' as _i977;
 import '../utils/secure_storage_module.dart' as _i327;
-import 'app_module.dart' as _i461;
+import 'app_module.dart' as _i462;
 import 'firebase_module.dart' as _i616;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -274,6 +276,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i487.ChatRemoteDataSource>(),
       ),
     );
+    gh.factory<_i461.SendMessageUseCase>(
+      () => _i461.SendMessageUseCase(
+        gh<_i139.CatalogRepository>(),
+        gh<_i477.ChatRepository>(),
+      ),
+    );
     gh.factory<_i514.GetMealDetailsUseCase>(
       () => _i514.GetMealDetailsUseCase(gh<_i749.MealsRepo>()),
     );
@@ -353,7 +361,7 @@ extension GetItInjectableX on _i174.GetIt {
   }
 }
 
-class _$AppModule extends _i461.AppModule {}
+class _$AppModule extends _i462.AppModule {}
 
 class _$FirebaseModule extends _i616.FirebaseModule {}
 

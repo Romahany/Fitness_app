@@ -1,205 +1,314 @@
-// import 'dart:convert';
-// import 'package:fitness_app/features/chat/domain/use_cases/chat_prompt_and_schemas.dart';
-// import 'package:injectable/injectable.dart';
+import 'dart:convert';
 
-// class ChatTurnOutput {
-//   final String answerText;
-//   final List<ExerciseEntity> exercises;
-//   final List<MealEntity> meals;
-//   final int totalTokensUsed;
-//   final bool isNearTokenLimit;
-//   const ChatTurnOutput({
-//     required this.answerText,
-//     required this.exercises,
-//     required this.meals,
-//     required this.totalTokensUsed,
-//     required this.isNearTokenLimit,
-//   });
-// }
+import 'package:fitness_app/config/base/base_response.dart';
+import 'package:fitness_app/features/chat/domain/entities/chat_entity.dart';
+import 'package:fitness_app/features/chat/domain/entities/chat_tool_definition_entity.dart';
+import 'package:fitness_app/features/chat/domain/entities/message_entity.dart';
+import 'package:fitness_app/features/chat/domain/repository/catalog_repository.dart';
+import 'package:fitness_app/features/chat/domain/repository/chat_repository.dart';
+import 'package:fitness_app/features/exercise/domain/entities/exercise_entity.dart';
+import 'package:fitness_app/features/meals/domain/entities/meal_entity.dart';
+import 'package:injectable/injectable.dart';
+
+class ChatOutput {
+  final String chatId;
+  final String answerText;
+  final List<ExerciseEntity> exercises;
+  final List<MealEntity> meals;
+  final int totalTokensUsed;
+  final bool isNearTokenLimit;
+  const ChatOutput({
+    required this.chatId,
+    required this.answerText,
+    required this.exercises,
+    required this.meals,
+    required this.totalTokensUsed,
+    required this.isNearTokenLimit,
+  });
+}
+
+@injectable
+class SendMessageUseCase {
+  final CatalogRepository _catalogRepository;
+  final ChatRepository _chatRepository;
+
+  SendMessageUseCase(this._catalogRepository, this._chatRepository);
+  static const int maxSessionTokens = 12000;
+  static const int maxToolLoops = 4;
+
+  Future<BaseResponse<ChatOutput>> call({
+    required String userId,
+    String? chatId,
+    required String userText,
+  }) async {
+    String activeChatId = chatId?.trim() ?? '';
+    if (activeChatId.isEmpty) {
+      final title = userText.length > 30
+          ? '${userText.substring(0, 30)}...'
+          : userText;
+      var createChate = await _chatRepository.createChat(
+        title: title,
+        userId: userId,
+      );
+      switch (createChate) {
+        case Success<ChatEntity>(data: final createNewChat):
+          activeChatId = createNewChat.id;
+
+        case Error<ChatEntity>():
+          return Error(createChate.failure);
+      }
+    }
+    final filterMetadata = await _catalogRepository.getFilterMetadata();
+    final historyMessage = await _chatRepository.getChatHistory(
+      chatId: activeChatId,
+      limit: 20,
+    );
+    final List<MessageEntity> previousMessages = switch (historyMessage) {
+      Success(data: final list) => list.reversed.toList(),
+      Error() => <MessageEntity>[],
+    };
+    final int sumOfTokens = previousMessages.fold(
+      0,
+      (sum, message) => sum + message.tokensUsed,
+    );
+
+    final userMessage = MessageEntity(
+      id: '',
+      chatId: activeChatId,
+      content: userText,
+      role: 'user',
+      createdAt: DateTime.now(),
+    );
+
+    final saveUserMsgResult = await _chatRepository.saveMessage(
+      message: userMessage,
+    );
+    switch (saveUserMsgResult) {
+      case Success<MessageEntity>():
+        break;
+      case Error<MessageEntity>(failure: final failure):
+        return Error(failure);
+    }
+
+    final recentHistory = previousMessages.length > 12
+        ? previousMessages.sublist(previousMessages.length - 12)
+        : previousMessages;
+
+    final List<MessageEntity> workingHistory = [...recentHistory, userMessage];
+
+    // =======================================================================
+    // هنعمل هنناااا ال loop tool call
+    // =======================================================================
+
+    bool thereIsTool = false;
+    int loopCount = 0;
+    int usedTokenOllama = 0;
+    String lastAssistantContent = '';
+    final Set<String> validExerciseCandidates = {};
+    final Set<String> validMealCandidates = {};
+
+    while (loopCount < maxToolLoops) {
+      loopCount++;
+      final responseResult = await _chatRepository
+          .requestCoachResponseWithTools(
+            conversationHistory: workingHistory,
+            muscleGroups: filterMetadata.muscleGroups,
+            difficulties: filterMetadata.difficulties,
+            equipment: filterMetadata.equipments,
+            mealCategories: filterMetadata.mealCategories,
+            mealAreas: filterMetadata.mealAreas,
+          );
+
+      final response = switch (responseResult) {
+        Success(data: final data) => data,
+        Error(failure: final failure) => throw failure,
+      };
+
+      usedTokenOllama += response.totalTokensUsed;
+      lastAssistantContent = response.content;
+
+      workingHistory.add(
+        MessageEntity(
+          id: '',
+          chatId: activeChatId,
+          content: response.content,
+          role: 'assistant',
+          createdAt: DateTime.now(),
+          toolCalls: response.toolCalls,
+        ),
+      );
+
+      if (!response.hasToolCalls) {
+        break;
+      }
+      thereIsTool = true;
+
+      // =====================================================================
+      //هنا هننده عل ى الداتا بيز من شغل علي
+      // =====================================================================
+      for (final ToolCallEntity call in response.toolCalls) {
+        final Map<String, dynamic> args = call.arguments;
+
+        if (call.name == 'get_exercises') {
+          // 1. نبحث في exercises.db عن طريق CatalogRepository
+          final exercises = await _catalogRepository.getExercisesForTool(
+            muscleGroup: args['muscle_group']?.toString(),
+            difficulty: args['difficulty']?.toString(),
+            equipment: args['equipment']?.toString(),
+          );
+
+          // 2. نسجل الـ IDs الحقيقية ونجهز JSON خفيف يفهمه الموديل
+          final rowsJson = exercises.map((e) {
+            validExerciseCandidates.add(e.id);
+            return {
+              'id': e.id,
+              'name': e.exercise,
+              'name_ar': e.nameAr,
+              'muscle_group': e.targetMuscleGroup,
+              'difficulty': e.difficultyLevel,
+              'equipment': e.primaryEquipment,
+            };
+          }).toList();
+
+          workingHistory.add(
+            MessageEntity(
+              id: '',
+              chatId: activeChatId,
+              role: 'tool',
+              toolName: call.name,
+              toolCallId: call.id,
+              content: jsonEncode(rowsJson),
+              createdAt: DateTime.now(),
+            ),
+          );
+        } else if (call.name == 'get_meals') {
+          final meals = await _catalogRepository.getMealsForTool(
+            category: args['category']?.toString(),
+            area: args['area']?.toString(),
+            minProtein: (args['min_protein'] as num?)?.toDouble(),
+            maxKcal: (args['max_kcal'] as num?)?.toDouble(),
+            vegetarian: args['vegetarian'] as bool?,
+          );
+
+          // 2. نسجل الـ IDs الحقيقية ونجهز JSON خفيف يفهمه الموديل
+          final rowsJson = meals.map((m) {
+            validMealCandidates.add(m.id);
+            return {
+              'id': m.id,
+              'name': m.name,
+              'name_ar': m.nameAr,
+              'category': m.category,
+              'area': m.area,
+              'kcal': m.kcal,
+              'protein_g': m.proteinG,
+            };
+          }).toList();
 
 
-// class SendMessageUseCase {
-//   final CatalogReposatery _catalogDataSource;
-//   final ChatRepository _ollamaDataSource;
-//   final ChatFirestoreDataSource _firestoreDataSource;
-//   static const int maxSessionTokens = 6000;
-//   static const int maxToolLoops = 4; // ; 4 Infinite Loop
-//   SendMessageUseCase(
-//     this._catalogDataSource,
-//     this._ollamaDataSource,
-//     this._firestoreDataSource,
-//   );
+          // 3. نضيف نتيجة الأداة في workingHistory بدور 'tool'
+          workingHistory.add(
+            MessageEntity(
+              id: '',
+              chatId: activeChatId,
+              role: 'tool',
+              toolName: call.name,
+              toolCallId: call.id,
+              content: jsonEncode(rowsJson),
+              createdAt: DateTime.now(),
+            ),
+          );
+        }
+      }
+    }
 
-//   Future<ChatTurnOutput> call({
-//     required String userId,
-//     required String conversationId,
-//     required String userText,
-//   }) async {
-//     //possible value  and stsyem prompt and tools
-//     final meta = await _catalogDataSource.getFilterMetadata();
-//     final systemPrompt = ChatPromptAndSchemas.buildSystemPrompt(meta);
-//     final tools = ChatPromptAndSchemas.buildTools(meta);
 
-//     //get previous messages and build message list
+    //answer schemaa
+    String finalAnswerText = '';
+    List<String> chosenExerciseIds = [];
+    List<String> chosenMealIds = [];
 
-//     final historyDtos = await _firestoreDataSource.getMessages(
-//       userId,
-//       conversationId,
-//     );
-//     int cumulativeTokens = historyDtos.fold(0, (sum, m) => sum + m.tokensUsed);
-//     final List<Map<String, dynamic>> messages = [
-//       {'role': 'system', 'content': systemPrompt},
+    if (!thereIsTool) {
+      finalAnswerText = lastAssistantContent;
+    } else {
+      // لو استخدم أداة، نطلب من أولاما تحويل الرد إلى JSON مطابق للـ answerSchema
+      final structuredResult = await _chatRepository
+          .requestStructuredCoachResponse(
+            conversationHistory: [
+              ...workingHistory,
+              MessageEntity(
+                id: '',
+                chatId: activeChatId,
+                role: 'user',
+                content:
+                    'Convert your previous answer to JSON matching the schema.',
+                createdAt: DateTime.now(),
+              ),
+            ],
+          );
 
-//       for (final m in historyDtos.skip(
-//         historyDtos.length > 12 ? historyDtos.length - 12 : 0,
-//       ))
-//         {'role': m.role, 'content': m.content},
-//       {'role': 'user', 'content': userText},
-//     ];
+      final structuredResponse = switch (structuredResult) {
+        Success(data: final data) => data,
+        Error(failure: final failure) => throw failure,
+      };
 
-//     //save user message previous
-//     await _firestoreDataSource.saveMessage(
-//       userId,
-//       conversationId,
-//       ChatMessageDto.fromEntity(
-//         ChatMessageEntity(
-//           id: '',
-//           role: 'user',
-//           content: userText,
-//           createdAt: DateTime.now(),
-//         ),
-//       ),
-//     );
+      // نضيف الـ Tokens المستهلكة في خطوة الـ Formatting إلى حصالة هذا الدور
+      usedTokenOllama += structuredResponse.totalTokensUsed;
 
-//     //tool call loop 1
-//     bool thereIsTool = false;
-//     int loopCount = 0;
-//     int turnTokens = 0;
-//     final Set<String> validExerciseCandidates = {};
-//     final Set<String> validMealCandidates = {};
-//     while (loopCount < maxToolLoops) {
-//       loopCount++;
-//       final response = await _ollamaDataSource.chat(
-//         messages: messages,
-//         tools: tools,
-//       );
-//       //caculate token form ollama's responce
-//       final promptTokens =
-//           (response['prompt_eval_count'] as num?)?.toInt() ?? 0;
-//       final evalTokens = (response['eval_count'] as num?)?.toInt() ?? 0;
-//       turnTokens = promptTokens + evalTokens;
-//       final assistantMsg = response['message'] as Map<String, dynamic>;
-//       messages.add(assistantMsg);
-//       final toolCalls = assistantMsg['tool_calls'] as List<dynamic>?;
-//       if (toolCalls == null || toolCalls.isEmpty) {
-//         break;
-//       }
-//       thereIsTool = true;
-//       for (final call in toolCalls) {
-//         final fn = call['function'] as Map<String, dynamic>;
-//         final name = fn['name'] as String;
-//         final args = (fn['arguments'] as Map<String, dynamic>?) ?? {};
-//         if (name == 'get_exercises') {
-//           final rows = await _catalogDataSource.getExercisesForTool(
-//             muscleGroup: args['muscle_group']?.toString(),
-//             difficulty: args['difficulty']?.toString(),
-//             equipment: args['equipment']?.toString(),
-//           );
-//           for (final r in rows) {
-//             validExerciseCandidates.add(r['id'].toString());
-//           }
-//           messages.add({
-//             'role': 'tool',
-//             'tool_name': name,
-//             'content': jsonEncode(rows),
-//           });
-//         } else if (name == 'get_meals') {
-//           final rows = await _catalogDataSource.getMealsForTool(
-//             category: args['category']?.toString(),
-//             area: args['area']?.toString(),
-//             minProtein: (args['min_protein'] as num?)?.toDouble(),
-//             maxKcal: (args['max_kcal'] as num?)?.toDouble(),
-//             vegetarian: args['vegetarian'] as bool?,
-//           );
-//           for (final r in rows) {
-//             validMealCandidates.add(r['id'].toString());
-//           }
-//           messages.add({
-//             'role': 'tool',
-//             'tool_name': name,
-//             'content': jsonEncode(rows),
-//           });
-//         }
-//       }
-//     }
-//     String finalAnswerText = '';
-//     List<String> chosenExerciseIds = [];
-//     List<String> chosenMealIds = [];
+      // نفك الـ JSON الراجع من الموديل
+      final parsed =
+          jsonDecode(structuredResponse.content) as Map<String, dynamic>;
+      finalAnswerText = parsed['answer'] as String? ?? lastAssistantContent;
 
-//     //return answer when there is no tool
-//     if (!thereIsTool) {
-//       finalAnswerText = (messages.last['content'] as String?) ?? '';
-//     } else {
-//       //make model to return responce dependon answer schema
-//       final formattedResponse = await _ollamaDataSource.chat(
-//         messages: [
-//           ...messages,
-//           {
-//             'role': 'user',
-//             'content':
-//                 'Convert your previous answer to JSON matching the schema.',
-//           },
-//         ],
-//         format: ChatPromptAndSchemas.answerSchema,
-//       );
-//       final pTokens =
-//           (formattedResponse['prompt_eval_count'] as num?)?.toInt() ?? 0;
-//       final eTokens = (formattedResponse['eval_count'] as num?)?.toInt() ?? 0;
-//       turnTokens += (pTokens + eTokens);
-//       final rawContent = formattedResponse['message']['content'] as String;
-//       final parsed = jsonDecode(rawContent) as Map<String, dynamic>;
-//       finalAnswerText = parsed['answer'] as String? ?? '';
+      // نفلتر الـ IDs ضد القوائم الحقيقية لضمان عدم وجود أي ID مخترع
+      chosenExerciseIds = ((parsed['exercise_ids'] as List?) ?? const [])
+          .map((e) => e.toString())
+          .where(validExerciseCandidates.contains)
+          .toList();
 
-//       //filter id to make sure not fake id geneareted
-//       chosenExerciseIds = ((parsed['exercise_ids'] as List?) ?? [])
-//           .map((e) => e.toString())
-//           .where((id) => validExerciseCandidates.contains(id))
-//           .toList();
-//       chosenMealIds = ((parsed['meal_ids'] as List?) ?? [])
-//           .map((e) => e.toString())
-//           .where((id) => validMealCandidates.contains(id))
-//           .toList();
-//     }
+      chosenMealIds = ((parsed['meal_ids'] as List?) ?? const [])
+          .map((e) => e.toString())
+          .where(validMealCandidates.contains)
+          .toList();
+    }
 
-//     //get card details
-//     final exercises = await _catalogDataSource.getExercisesByIds(
-//       chosenExerciseIds,
-//     );
-//     final meals = await _catalogDataSource.getMealsByIds(chosenMealIds);
+    // جلب الكيانات الكاملة (بالصور واليوتيوب والمكونات) من SQLite لعرض الكروت
+    final List<ExerciseEntity> exercises = await _catalogRepository
+        .getExercisesByIds(chosenExerciseIds);
+    final List<MealEntity> meals = await _catalogRepository.getMealsByIds(
+      chosenMealIds,
+    );
 
-//     //save message of assistent in firestore with token and ids
-//     await _firestoreDataSource.saveMessage(
-//       userId,
-//       conversationId,
-//       ChatMessageDto.fromEntity(
-//         ChatMessageEntity(
-//           id: '',
-//           role: 'assistant',
-//           content: finalAnswerText,
-//           exerciseIds: chosenExerciseIds,
-//           mealIds: chosenMealIds,
-//           tokensUsed: turnTokens,
-//           createdAt: DateTime.now(),
-//         ),
-//       ),
-//     );
-//     final updatedTotalTokens = cumulativeTokens + turnTokens;
-//     return ChatTurnOutput(
-//       answerText: finalAnswerText,
-//       exercises: exercises,
-//       meals: meals,
-//       totalTokensUsed: updatedTotalTokens,
-//       isNearTokenLimit: updatedTotalTokens >= (maxSessionTokens * 0.85),
-//     );
-//   }
-// }
+    // =======================================================================
+    // الخطوة 6: حفظ رد الـ Assistant في Firestore وإرجاع النتيجة للـ Cubit
+    // =======================================================================
+
+    final saveAssistantResult = await _chatRepository.saveMessage(
+      message: MessageEntity(
+        id: '',
+        chatId: activeChatId,
+        role: 'assistant',
+        content: finalAnswerText,
+        exerciseIds: chosenExerciseIds,
+        mealIds: chosenMealIds,
+        tokensUsed: usedTokenOllama,
+        createdAt: DateTime.now(),
+      ),
+    );
+    if (saveAssistantResult case Error(failure: final failure)) {
+      return Error(failure);
+    }
+
+    final int updatedTotalTokens = sumOfTokens + usedTokenOllama;
+
+    return Success(
+      ChatOutput(
+        chatId: activeChatId,
+        answerText: finalAnswerText,
+        exercises: exercises,
+        meals: meals,
+        totalTokensUsed: updatedTotalTokens,
+        isNearTokenLimit: updatedTotalTokens >= (maxSessionTokens * 0.85),
+      ),
+    );
+  }
+}
