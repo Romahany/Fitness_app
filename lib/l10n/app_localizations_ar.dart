@@ -740,4 +740,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get hi => 'أهلاً بك';
+
+  @override
+  String get noChatYet => 'لا توجد محادثات سابقة بعد';
 }

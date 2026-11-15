@@ -746,4 +746,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hi => 'Hi';
+
+  @override
+  String get noChatYet => 'No previous conversations yet';
 }

@@ -7,6 +7,8 @@ import 'package:fitness_app/features/auth/presentation/forget_password/view/widg
 import 'package:fitness_app/features/auth/presentation/login/view/login_view.dart';
 import 'package:fitness_app/features/auth/presentation/onboarding/views/onboarding_view.dart';
 import 'package:fitness_app/features/auth/presentation/register/view/register_view.dart';
+import 'package:fitness_app/features/chat/presentation/manager/chat_cubit.dart';
+import 'package:fitness_app/features/chat/presentation/manager/chat_event.dart';
 import 'package:fitness_app/features/chat/presentation/view/chat_view.dart';
 import 'package:fitness_app/features/exercise/domain/entities/exercise_entity.dart';
 import 'package:fitness_app/features/exercise/presentation/exercise_details/args/exercise_details_args.dart';
@@ -105,7 +107,7 @@ abstract final class GenerateRoutes {
             child: MainLayoutView(
               tabs: [
                 HomeView(),
-               SizedBox(),
+                SizedBox(),
                 WorkoutCategoriesView(),
                 BlocProvider(
                   create: (_) =>
@@ -168,9 +170,27 @@ abstract final class GenerateRoutes {
 
       case AppRoutes.chatHistory:
         var route = getIt<PrefrenceBoradingChat>().getBoardingChat;
-        return _pageRoute(route == true ? MessageView() : ChatView(), settings);
+        return _pageRoute(
+          route == true
+              ? BlocProvider<ChatCubit>(
+                  create: (_) =>
+                      getIt<ChatCubit>()
+                        ..onEvent(const LoadPreviousChatsEvent()),
+                  child: const MessageView(),
+                )
+              : const ChatView(),
+          settings,
+        );
+
       case AppRoutes.chatMessages:
-        return _pageRoute(const MessageView(), settings);
+        return _pageRoute(
+          BlocProvider<ChatCubit>(
+            create: (_) =>
+                getIt<ChatCubit>()..onEvent(const LoadPreviousChatsEvent()),
+            child: const MessageView(),
+          ),
+          settings,
+        );
 
       case AppRoutes.editProfile:
         return _pageRoute(const _StubScreen('Edit Profile'), settings);

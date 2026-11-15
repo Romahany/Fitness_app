@@ -1495,6 +1495,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hi'**
   String get hi;
+
+  /// No description provided for @noChatYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No previous conversations yet'**
+  String get noChatYet;
 }
 
 class _AppLocalizationsDelegate

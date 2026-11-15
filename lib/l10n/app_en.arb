@@ -306,6 +306,7 @@
   "couldNotLoadCategories": "Could not load categories",
   "dataNotAvailable": "Data is currently unavailable.",
   "typeYourMessage": "Enter Your Message",
-  "hi": "Hi"
+  "hi": "Hi",
+  "noChatYet":"No previous conversations yet"
 
 }

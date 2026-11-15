@@ -306,5 +306,6 @@
   "dataNotAvailable": "البيانات غير متوفرة حالياً.",
   "typeYourMessage": "أكتب رسالتك",
   "hi": "أهلاً بك",
-  "iamYourSmartCoach": "أنا مدربك الذكي"
+  "iamYourSmartCoach": "أنا مدربك الذكي",
+  "noChatYet":"لا توجد محادثات سابقة بعد"
 }

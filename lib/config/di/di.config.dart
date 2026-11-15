@@ -68,6 +68,7 @@ import '../../features/chat/domain/repository/catalog_repository.dart' as _i139;
 import '../../features/chat/domain/repository/chat_repository.dart' as _i477;
 import '../../features/chat/domain/use_cases/send_message_use_case.dart'
     as _i461;
+import '../../features/chat/presentation/manager/chat_cubit.dart' as _i770;
 import '../../features/chat/presentation/view/widget/prefrence_borading_chat.dart'
     as _i982;
 import '../../features/exercise/api/client/exercise_api_client.dart' as _i248;
@@ -305,6 +306,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i1032.GetMealsCategoriesUseCase>(),
         gh<_i385.GetMealsByCategoryUseCase>(),
         gh<_i514.GetMealDetailsUseCase>(),
+      ),
+    );
+    gh.factory<_i770.ChatCubit>(
+      () => _i770.ChatCubit(
+        gh<_i461.SendMessageUseCase>(),
+        gh<_i477.ChatRepository>(),
+        gh<_i139.CatalogRepository>(),
+        gh<_i558.FlutterSecureStorage>(),
       ),
     );
     gh.factory<_i615.GetDifficultyLevelsUseCase>(
