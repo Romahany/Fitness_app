@@ -40,7 +40,7 @@ class DetailsFoodShimmer extends StatelessWidget {
                     left: 16,
                     child: Skeleton.keep(
                       child: CustomButtonClick(
-                        heightBackground: 24,
+                        hightBackground: 24,
                         widthBackground: 24,
                         onPressed: () {
                           Navigator.maybePop(context);

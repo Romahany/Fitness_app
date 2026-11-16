@@ -305,10 +305,10 @@
   "dataNotAvailable": "البيانات غير متوفرة حالياً.",
   "failedToBuildPopularTraining": "فشل بناء التدريب الشائع لـ {muscleName}",
   "@failedToBuildPopularTraining": {
-    "placeholders": {
-      "muscleName":
-        "type": "String"
-      }
-    }
+   "placeholders": {
+         "muscleName": {
+           "type": "String"
+         }
+       }
   }
 }
