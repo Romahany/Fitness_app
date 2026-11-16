@@ -2,10 +2,10 @@ import 'package:fitness_app/config/routing/app_routes.dart';
 import 'package:fitness_app/config/routing/generate_routes.dart';
 import 'package:fitness_app/core/constants/app_test_keys.dart';
 import 'package:fitness_app/features/chat/presentation/views/chat_view.dart';
+import 'package:fitness_app/features/exercise/presentation/workout_categories/view/workout_categories_view.dart';
 import 'package:fitness_app/features/home/presentation/views/home_view.dart';
 import 'package:fitness_app/features/main/presentation/views/main_layout_view.dart';
 import 'package:fitness_app/features/profile/presentation/view/profile_view.dart';
-import 'package:fitness_app/features/workouts/presentation/views/workouts_view.dart';
 import 'package:fitness_app/l10n/app_localizations.dart';
 import 'package:fitness_app/l10n/app_localizations_en.dart';
 import 'package:flutter/material.dart';
@@ -56,7 +56,7 @@ void main() {
                       const [
                         HomeView(),
                         ChatView(),
-                        WorkoutsView(),
+                        WorkoutCategoriesView(),
                         ProfileView(),
                       ],
                 ),
@@ -145,7 +145,7 @@ void main() {
         find.byType(IndexedStack),
       );
       expect(indexedStack.index, 2);
-      expect(find.byType(WorkoutsView), findsOneWidget);
+      expect(find.byType(WorkoutCategoriesView), findsOneWidget);
 
       // Verify label visibility updated
       expect(find.text(l10n.workouts), findsOneWidget);

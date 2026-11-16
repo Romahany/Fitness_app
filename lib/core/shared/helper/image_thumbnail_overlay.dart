@@ -35,10 +35,7 @@ class ImageThumbnailOverlay extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
-              colors: [
-                AppColors.neutral[500] ?? AppColors.black,
-                Colors.transparent,
-              ],
+              colors: [AppColors.neutral[500]!, Colors.transparent],
             ),
           ),
         ),

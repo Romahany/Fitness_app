@@ -93,7 +93,10 @@
   "categoryYoga": "Yoga",
   "categoryAerobics": "Aerobics",
   "categoryTrainer": "Trainer",
-  "recommendationToday": "Recommendation for today",
+  "recommendationToDay": "Recommendation To Day",
+  "strengthenYour": "Exercises That Strengthen Your",
+  "tasksCount": "{count} Tasks",
+  "noPopularTraining": "No popular training available",
   "jogging": "Jogging",
   "pushUp": "Push-up",
   "squat": "Squat",
@@ -252,6 +255,7 @@
   "videoNotFound": "This video isn't available. It may have been removed or set to private.",
   "notFound": "Unable to find the requested resource.",
   "retry": "Retry",
+  "back": "Back",
   "unableToPlayVideo": "Unable to play video",
   "closeVideo": "Close video",
   "cancel": "Cancel",
@@ -299,7 +303,15 @@
   "checkConnectionMessage": "Check your connection and try again.",
   "couldNotLoadMeals": "We could not load the meals. Please try again.",
   "tryAgain": "Try again",
+  "noCategoriesAvailable": "No categories available",
   "couldNotLoadCategories": "Could not load categories",
-  "dataNotAvailable": "Data is currently unavailable."
-
+  "dataNotAvailable": "Data is currently unavailable.",
+ "failedToBuildPopularTraining": "Failed to build popular training for {muscleName}",
+  "@failedToBuildPopularTraining": {
+    "placeholders": {
+      "muscleName": {
+        "type": "String"
+      }
+    }
+  }
 }

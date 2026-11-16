@@ -37,4 +37,6 @@ abstract class ExerciseApiClient {
   Future<MusclesByGroupResponse> getMusclesByGroup(
     @Query(ApiStrings.qMuscleGroupId) String muscleGroupId,
   );
+  @GET(ApiStrings.randomMuscles)
+  Future<MusclesByGroupResponse> getRandomMuscles();
 }

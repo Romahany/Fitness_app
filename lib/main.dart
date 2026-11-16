@@ -26,17 +26,16 @@ class FitnessApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilPlusInit(
-      designSize: const Size(375, 812),
-      minTextAdapt: true,
-      splitScreenMode: true,
-      ensureScreenSize: true,
-      child: BlocProvider.value(
-        value: getIt<AppLocaleCubit>(),
+    return BlocProvider.value(
+      value: getIt<AppLocaleCubit>(),
+      child: ScreenUtilPlusInit(
+        designSize: const Size(375, 812),
+        minTextAdapt: true,
+        splitScreenMode: true,
+        ensureScreenSize: true,
         child: BlocBuilder<AppLocaleCubit, Locale>(
-          builder: (context, locale) {
+          builder: (context, state) {
             return MaterialApp(
-              locale: locale,
               builder: (context, child) {
                 return BaseUiEventListener<
                   AppAuthCubit,

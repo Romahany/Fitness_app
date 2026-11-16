@@ -49,7 +49,7 @@ class TestView extends StatelessWidget {
                     child: Align(
                       alignment: const Alignment(-0.9, 0),
                       child: CustomButtonClick(
-                        heightBackground: 24,
+                        hightBackground: 24,
                         widthBackground: 24,
                         onPressed: () {
                           Navigator.maybePop(context);

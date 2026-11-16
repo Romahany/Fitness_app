@@ -8,7 +8,8 @@ abstract class ApiStrings {
   static const String signup = '/auth/signup';
   static const String signin = '/auth/signin';
   static const String changePassword = '/auth/change-password';
-  static String get uploadPhoto => '/auth/upload-photo';
+  static const String uploadPhoto =
+      '/auth/upload-photo';
   static const String profileData = '/auth/profile-data';
   static const String logout = '/auth/logout';
   static const String forgotPassword = '/auth/forgotPassword';
@@ -17,27 +18,28 @@ abstract class ApiStrings {
   static String get deleteMe => '/auth/deleteMe';
   static String get editProfile => '/auth/editProfile';
 
-  static String get levels => '/levels';
+  static const String levels = '/levels';
 
   static const String difficultyLevelsByPrimeMover =
       '/levels/difficulty-levels/by-prime-mover';
 
   static const String muscles = '/muscles';
-  static String get randomMuscles => '/muscles/random';
+  static const String randomMuscles = '/muscles/random';
 
   static String musclesByGroupId(String muscleGroupId) =>
       '/musclesGroup/$muscleGroupId';
 
   static const String musclesByGroup = '/musclesGroup/by-muscle-group';
 
-  static String get primeMoversByMuscleGroup => '/musclesGroup/by-muscle-group';
+  static const String primeMoversByMuscleGroup =
+      '/musclesGroup/by-muscle-group';
 
-  static String get exercises => '/exercises';
+  static const String exercises = '/exercises';
 
   static const String exercisesByMuscleDifficulty =
       '/exercises/by-muscle-difficulty';
 
-  static String get randomExercises => '/exercises/random';
+  static const String randomExercises = '/exercises/random';
 
   static const String mealCategories = '$mealBaseUrl/categories.php';
 

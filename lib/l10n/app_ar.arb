@@ -259,6 +259,7 @@
   "videoNotFound": "هذا الفيديو غير متاح. ربما تمت إزالته أو تم تعيينه كخاص.",
   "notFound": "تعذر العثور على المطلوب.",
   "retry": "إعادة المحاولة",
+  "back": "رجوع",
   "unableToPlayVideo": "تعذر تشغيل الفيديو",
   "closeVideo": "إغلاق الفيديو",
   "cancel": "إلغاء",
@@ -299,6 +300,15 @@
   "checkConnectionMessage": "تحقق من اتصالك بالإنترنت وحاول مرة أخرى.",
   "couldNotLoadMeals": "تعذر تحميل الوجبات. يرجى المحاولة مرة أخرى.",
   "tryAgain": "حاول مرة أخرى",
+  "noCategoriesAvailable": "لا توجد فئات متاحة",
   "couldNotLoadCategories": "تعذر تحميل الفئات",
-  "dataNotAvailable": "البيانات غير متوفرة حالياً."
+  "dataNotAvailable": "البيانات غير متوفرة حالياً.",
+  "failedToBuildPopularTraining": "فشل بناء التدريب الشائع لـ {muscleName}",
+  "@failedToBuildPopularTraining": {
+   "placeholders": {
+         "muscleName": {
+           "type": "String"
+         }
+       }
+  }
 }
