@@ -5,7 +5,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fitness_app/config/base/base_response.dart';
 import 'package:fitness_app/features/auth/api/client/auth_api_client.dart';
-import 'package:fitness_app/features/auth/data/data_source/remote/auth_remote_data_source.dart';
 import 'package:fitness_app/features/auth/data/model/requests/login_request/login_request.dart';
 import 'package:fitness_app/features/auth/data/model/responses/login_response/login_response.dart';
 import 'package:fitness_app/features/auth/domain/entities/login_entity/login_entity.dart';
@@ -44,13 +43,13 @@ class FakeAuthRepo implements AuthRepo {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-class FakeRemoteDataSource implements RemoteDataSource {
+class FakeRemoteDataSource {
   int callCount = 0;
   LoginRequest? lastRequest;
   LoginResponse? nextResponse;
   Object? nextError;
 
-  @override
+//  @override
   Future<LoginResponse> login(LoginRequest login) async {
     callCount++;
     lastRequest = login;
