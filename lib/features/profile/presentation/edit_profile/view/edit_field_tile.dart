@@ -26,10 +26,13 @@ class EditFieldTile extends StatelessWidget {
       children: [
         Row(
           children: [
-            Text(
-              '$label ',
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: AppColors.textPrimary,
+            Flexible(
+              child: Text(
+                '$label ',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: AppColors.textPrimary,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             GestureDetector(
