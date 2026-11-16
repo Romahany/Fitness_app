@@ -91,6 +91,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i450.AppLocaleCubit>(
       () => _i450.AppLocaleCubit(gh<_i558.FlutterSecureStorage>()),
     );
+    gh.singleton<_i418.ProfileApiClient>(
+      () => _i418.ProfileApiClient(gh<_i361.Dio>()),
+    );
     gh.lazySingleton<_i361.Dio>(
       () => dioModule.mealDio(),
       instanceName: 'mealDio',
@@ -110,9 +113,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.singleton<_i213.AuthApiClient>(
       () => _i213.AuthApiClient(gh<_i361.Dio>(instanceName: 'fitnessDio')),
-    );
-    gh.singleton<_i418.ProfileApiClient>(
-      () => _i418.ProfileApiClient(gh<_i361.Dio>(instanceName: 'fitnessDio')),
     );
     gh.factory<_i299.ProfileRemoteDataSource>(
       () => _i924.ProfileRemoteDataSourceImpl(gh<_i418.ProfileApiClient>()),
@@ -137,12 +137,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i170.ProfileLogoutUseCase>(
       () => _i170.ProfileLogoutUseCase(gh<_i364.ProfileRepo>()),
     );
-    gh.factory<_i1027.ProfileUpdateUseCase>(
-      () => _i1027.ProfileUpdateUseCase(gh<_i364.ProfileRepo>()),
-    );
-    gh.factory<_i852.ProfileUploadPhotoUseCase>(
-      () => _i852.ProfileUploadPhotoUseCase(gh<_i364.ProfileRepo>()),
-    );
     gh.factory<_i171.AuthRepo>(
       () => _i279.AuthRepoImpl(gh<_i548.AuthRemoteDataSource>()),
     );
@@ -157,13 +151,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i397.VerifyOtpUserCase>(
       () => _i397.VerifyOtpUserCase(gh<_i171.AuthRepo>()),
-    );
-    gh.factory<_i109.EditProfileCubit>(
-      () => _i109.EditProfileCubit(
-        gh<_i1027.ProfileUpdateUseCase>(),
-        gh<_i852.ProfileUploadPhotoUseCase>(),
-        gh<_i428.ImagePickerService>(),
-      ),
     );
     gh.factory<_i332.ChangePasswordCubit>(
       () => _i332.ChangePasswordCubit(gh<_i40.ProfileChangePasswordUseCase>()),
