@@ -47,9 +47,8 @@ void main() {
           ],
           supportedLocales: AppLocalizations.supportedLocales,
           routes: {
-            AppRoutes.chatHistory: (_) => const Scaffold(
-              body: Text('Chat History Screen'),
-            ),
+            AppRoutes.chatHistory: (_) =>
+                const Scaffold(body: Text('Chat History Screen')),
           },
           home: MainLayoutView(tabs: actualTabs),
         ),

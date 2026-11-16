@@ -59,7 +59,7 @@ class _MainLayoutViewState extends State<MainLayoutView> {
           key: const Key(AppTestKeys.mainLayoutBottomNav),
           currentIndex: _currentTap,
           onTap: (index) {
-            if(index == 1){
+            if (index == 1) {
               Navigator.of(context).pushNamed(AppRoutes.chatHistory);
               return;
             }

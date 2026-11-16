@@ -50,53 +50,53 @@ void main() {
     await cubit.close();
   });
 
-    test('handles failure gracefully and emits ShowFailureMessage', () async {
-      when(
-        () => sendMessageUseCase(
-          userId: any(named: 'userId'),
-          chatId: any(named: 'chatId'),
-          userText: any(named: 'userText'),
-          onChatCreated: any(named: 'onChatCreated'),
+  test('handles failure gracefully and emits ShowFailureMessage', () async {
+    when(
+      () => sendMessageUseCase(
+        userId: any(named: 'userId'),
+        chatId: any(named: 'chatId'),
+        userText: any(named: 'userText'),
+        onChatCreated: any(named: 'onChatCreated'),
+      ),
+    ).thenAnswer((_) async => const Error<ChatOutput>(UnknownFailure()));
+
+    final eventFuture = cubit.uiEventStream.first;
+    await cubit.onEvent(const SendMessageEvent('  Try again  '));
+
+    expect(cubit.state.isSending, isFalse);
+    expect(cubit.state.messagesState.data?.length, 1);
+    expect(cubit.state.messagesState.data?.first.text, 'Try again');
+    expect(await eventFuture, isA<ShowFailureMessage>());
+  });
+
+  test('adds response and updates activeChatId on success', () async {
+    when(
+      () => sendMessageUseCase(
+        userId: any(named: 'userId'),
+        chatId: any(named: 'chatId'),
+        userText: any(named: 'userText'),
+        onChatCreated: any(named: 'onChatCreated'),
+      ),
+    ).thenAnswer(
+      (_) async => const Success<ChatOutput>(
+        ChatOutput(
+          chatId: 'chat-123',
+          answerText: 'Hello there!',
+          exercises: [],
+          meals: [],
+          totalTokensUsed: 100,
+          isNearTokenLimit: false,
         ),
-      ).thenAnswer((_) async => const Error<ChatOutput>(UnknownFailure()));
+      ),
+    );
 
-      final eventFuture = cubit.uiEventStream.first;
-      await cubit.onEvent(const SendMessageEvent('  Try again  '));
+    await cubit.onEvent(const SendMessageEvent('Hello'));
 
-      expect(cubit.state.isSending, isFalse);
-      expect(cubit.state.messagesState.data?.length, 1);
-      expect(cubit.state.messagesState.data?.first.text, 'Try again');
-      expect(await eventFuture, isA<ShowFailureMessage>());
-    });
-
-    test('adds response and updates activeChatId on success', () async {
-      when(
-        () => sendMessageUseCase(
-          userId: any(named: 'userId'),
-          chatId: any(named: 'chatId'),
-          userText: any(named: 'userText'),
-          onChatCreated: any(named: 'onChatCreated'),
-        ),
-      ).thenAnswer(
-        (_) async => const Success<ChatOutput>(
-          ChatOutput(
-            chatId: 'chat-123',
-            answerText: 'Hello there!',
-            exercises: [],
-            meals: [],
-            totalTokensUsed: 100,
-            isNearTokenLimit: false,
-          ),
-        ),
-      );
-
-      await cubit.onEvent(const SendMessageEvent('Hello'));
-
-      expect(cubit.state.isSending, isFalse);
-      expect(cubit.state.activeChatId, 'chat-123');
-      expect(cubit.state.messagesState.data?.length, 2);
-      expect(cubit.state.messagesState.data?.first.text, 'Hello');
-      expect(cubit.state.messagesState.data?.last.text, 'Hello there!');
-      expect(cubit.state.messagesState.data?.last.isUser, isFalse);
-    });
+    expect(cubit.state.isSending, isFalse);
+    expect(cubit.state.activeChatId, 'chat-123');
+    expect(cubit.state.messagesState.data?.length, 2);
+    expect(cubit.state.messagesState.data?.first.text, 'Hello');
+    expect(cubit.state.messagesState.data?.last.text, 'Hello there!');
+    expect(cubit.state.messagesState.data?.last.isUser, isFalse);
+  });
 }

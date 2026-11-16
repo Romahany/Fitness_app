@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fitness_app/features/chat/data/datasource/firestore/chat_firestore_data_source.dart';
 import 'package:fitness_app/features/chat/data/models/firestore/chat_message_model.dart';
@@ -14,25 +13,28 @@ class ChatFirestoreDataSourceImpl implements ChatFirestoreDataSource {
   ChatFirestoreDataSourceImpl(this._firestore);
 
   CollectionReference<ChatModel> get _chatsCollection {
-    return _firestore.collection('chats').withConverter<ChatModel>(
-      fromFirestore: ChatModel.fromFirestore,
-      toFirestore: (chat, options) => chat.toFirestore(),
-    );
+    return _firestore
+        .collection('chats')
+        .withConverter<ChatModel>(
+          fromFirestore: ChatModel.fromFirestore,
+          toFirestore: (chat, options) => chat.toFirestore(),
+        );
   }
 
   CollectionReference<ChatMessageModel> _messagesCollection(String chatId) {
-    return _chatsCollection.doc(chatId).collection('messages')
+    return _chatsCollection
+        .doc(chatId)
+        .collection('messages')
         .withConverter<ChatMessageModel>(
-      fromFirestore: ChatMessageModel.fromFirestore,
-      toFirestore: (message, options) => message.toFirestore(),
-    );
+          fromFirestore: ChatMessageModel.fromFirestore,
+          toFirestore: (message, options) => message.toFirestore(),
+        );
   }
 
   @override
   Future<ChatModel> createChat({
     required String title,
     required String userId,
-
   }) async {
     final now = DateTime.now();
     final chatDocument = _chatsCollection.doc();
@@ -52,49 +54,42 @@ class ChatFirestoreDataSourceImpl implements ChatFirestoreDataSource {
     return chat;
   }
 
- 
-@override
-Future<ChatPageModel> getChats({
-  required String userId,
-  int limit = 20,
-  DateTime? startAfterUpdatedAt,
-  String? startAfterId,
-}) async {
-  Query<ChatModel> query = _chatsCollection
-      .where('userId', isEqualTo: userId)
-      .where('isDeleted', isEqualTo: false)
-      .orderBy('updatedAt', descending: true)
-      .orderBy(FieldPath.documentId)
-      .limit(limit + 1);
+  @override
+  Future<ChatPageModel> getChats({
+    required String userId,
+    int limit = 20,
+    DateTime? startAfterUpdatedAt,
+    String? startAfterId,
+  }) async {
+    Query<ChatModel> query = _chatsCollection
+        .where('userId', isEqualTo: userId)
+        .where('isDeleted', isEqualTo: false)
+        .orderBy('updatedAt', descending: true)
+        .orderBy(FieldPath.documentId)
+        .limit(limit + 1);
 
-  if (startAfterUpdatedAt != null && startAfterId != null) {
-    query = query.startAfter([
-      Timestamp.fromDate(startAfterUpdatedAt),
-      startAfterId,
-    ]);
+    if (startAfterUpdatedAt != null && startAfterId != null) {
+      query = query.startAfter([
+        Timestamp.fromDate(startAfterUpdatedAt),
+        startAfterId,
+      ]);
+    }
+
+    final snapshot = await query.get();
+
+    final hasMore = snapshot.docs.length > limit;
+
+    final pageDocs = hasMore
+        ? snapshot.docs.take(limit).toList()
+        : snapshot.docs;
+
+    final chats = pageDocs.map((doc) => doc.data()).toList();
+
+    return ChatPageModel(chats: chats, hasMore: hasMore);
   }
 
-  final snapshot = await query.get();
-
-  final hasMore = snapshot.docs.length > limit;
-
-  final pageDocs = hasMore
-      ? snapshot.docs.take(limit).toList()
-      : snapshot.docs;
-
-  final chats = pageDocs.map((doc) => doc.data()).toList();
-
-  return ChatPageModel(
-    chats: chats,
-    hasMore: hasMore,
-  );
-}
-
-
   @override
-  Future<void> deleteChat({
-    required String chatId,
-  }) async {
+  Future<void> deleteChat({required String chatId}) async {
     final chatDocument = _chatsCollection.doc(chatId);
     final deletedAt = DateTime.now();
 
@@ -138,8 +133,8 @@ Future<ChatPageModel> getChats({
   }) async {
     final now = DateTime.now();
     final normalizedMessageId = messageId?.trim();
-    final messageDocument = normalizedMessageId == null ||
-            normalizedMessageId.isEmpty
+    final messageDocument =
+        normalizedMessageId == null || normalizedMessageId.isEmpty
         ? _messagesCollection(chatId).doc()
         : _messagesCollection(chatId).doc(normalizedMessageId);
     final message = ChatMessageModel(
@@ -173,9 +168,9 @@ Future<ChatPageModel> getChats({
     int limit = 50,
     DateTime? startAfter,
   }) async {
-    Query<ChatMessageModel> query = _messagesCollection(chatId)
-        .orderBy('createdAt', descending: true)
-        .limit(limit);
+    Query<ChatMessageModel> query = _messagesCollection(
+      chatId,
+    ).orderBy('createdAt', descending: true).limit(limit);
 
     if (startAfter != null) {
       query = query.startAfter([Timestamp.fromDate(startAfter)]);

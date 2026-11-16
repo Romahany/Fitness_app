@@ -1,4 +1,3 @@
-
 import 'package:fitness_app/config/base/base_response.dart';
 import 'package:fitness_app/features/chat/domain/entities/chat_entity.dart';
 import 'package:fitness_app/features/chat/domain/entities/chat_page_entity.dart';
@@ -29,9 +28,7 @@ abstract interface class ChatRepository {
     ChatEntity? lastChat,
   });
 
-  Future<BaseResponse<void>> deleteChat({
-    required String chatId,
-  });
+  Future<BaseResponse<void>> deleteChat({required String chatId});
 
   Future<BaseResponse<MessageEntity>> saveMessage({
     required MessageEntity message,

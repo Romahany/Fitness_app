@@ -11,14 +11,14 @@ class ChatState extends Equatable {
   final bool showTokenLimitWarning;
 
   const ChatState({
-     this.messagesState = const BaseState(data: []), 
-     this.conversationsState = const BaseState(data: []),
-     this.activeChatId,
-     this.isSending = false,
-     this.showTokenLimitWarning = false,
+    this.messagesState = const BaseState(data: []),
+    this.conversationsState = const BaseState(data: []),
+    this.activeChatId,
+    this.isSending = false,
+    this.showTokenLimitWarning = false,
   });
 
- ChatState copyWith({
+  ChatState copyWith({
     String? activeChatId,
     bool clearActiveChatId = false,
     BaseState<List<ChatUiMessage>>? messagesState,
@@ -27,11 +27,14 @@ class ChatState extends Equatable {
     bool? showTokenLimitWarning,
   }) {
     return ChatState(
-      activeChatId: clearActiveChatId ? null : (activeChatId ?? this.activeChatId),
+      activeChatId: clearActiveChatId
+          ? null
+          : (activeChatId ?? this.activeChatId),
       messagesState: messagesState ?? this.messagesState,
       conversationsState: conversationsState ?? this.conversationsState,
       isSending: isSending ?? this.isSending,
-      showTokenLimitWarning: showTokenLimitWarning ?? this.showTokenLimitWarning,
+      showTokenLimitWarning:
+          showTokenLimitWarning ?? this.showTokenLimitWarning,
     );
   }
 
@@ -41,9 +44,6 @@ class ChatState extends Equatable {
     conversationsState,
     activeChatId,
     isSending,
-    showTokenLimitWarning
+    showTokenLimitWarning,
   ];
-
 }
-
-

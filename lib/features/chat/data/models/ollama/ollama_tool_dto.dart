@@ -8,10 +8,7 @@ class OllamaToolDto {
   final String type;
   final OllamaToolFunctionDto function;
 
-  const OllamaToolDto({
-    this.type = 'function',
-    required this.function,
-  });
+  const OllamaToolDto({this.type = 'function', required this.function});
 
   factory OllamaToolDto.fromEntity(ChatToolDefinitionEntity entity) {
     return OllamaToolDto(
@@ -52,10 +49,7 @@ class OllamaToolCallDto {
   final String? id;
   final OllamaToolCallFunctionDto function;
 
-  const OllamaToolCallDto({
-    this.id,
-    required this.function,
-  });
+  const OllamaToolCallDto({this.id, required this.function});
 
   factory OllamaToolCallDto.fromEntity(ToolCallEntity entity) {
     return OllamaToolCallDto(
@@ -94,6 +88,5 @@ class OllamaToolCallFunctionDto {
   factory OllamaToolCallFunctionDto.fromJson(Map<String, dynamic> json) =>
       _$OllamaToolCallFunctionDtoFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$OllamaToolCallFunctionDtoToJson(this);
+  Map<String, dynamic> toJson() => _$OllamaToolCallFunctionDtoToJson(this);
 }

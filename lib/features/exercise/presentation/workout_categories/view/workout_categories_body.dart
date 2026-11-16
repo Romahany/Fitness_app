@@ -132,16 +132,15 @@ class WorkoutMusclesGrid extends StatelessWidget {
             return ImageTitleCard(
               imagePath: muscle.image,
               title: muscle.name,
-              
-                onTap: () => Navigator.pushNamed(
-  context,
-  AppRoutes.exerciseDetails,
-  arguments: ExerciseDetailsArgs(
-    primeMoverMuscleId: muscle.id, 
-    muscleName: muscle.name,       
-  ),
-),
-              
+
+              onTap: () => Navigator.pushNamed(
+                context,
+                AppRoutes.exerciseDetails,
+                arguments: ExerciseDetailsArgs(
+                  primeMoverMuscleId: muscle.id,
+                  muscleName: muscle.name,
+                ),
+              ),
             );
           },
         );

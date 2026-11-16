@@ -10,10 +10,7 @@ import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 import 'package:gap/gap.dart';
 
 class PreviousConversationsDrawer extends StatelessWidget {
-  const PreviousConversationsDrawer({
-    super.key,
-    required this.onNewChat,
-  });
+  const PreviousConversationsDrawer({super.key, required this.onNewChat});
 
   final VoidCallback onNewChat;
 
@@ -100,8 +97,9 @@ class PreviousConversationsDrawer extends StatelessWidget {
                           ),
                           dense: true,
                           selected: isSelected,
-                          selectedTileColor:
-                              AppColors.primary.withValues(alpha: 0.12),
+                          selectedTileColor: AppColors.primary.withValues(
+                            alpha: 0.12,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10.r),
                           ),
@@ -133,15 +131,15 @@ class PreviousConversationsDrawer extends StatelessWidget {
                             ),
                             onPressed: () {
                               context.read<ChatCubit>().onEvent(
-                                    DeleteConversationEvent(chat.id),
-                                  );
+                                DeleteConversationEvent(chat.id),
+                              );
                             },
                           ),
                           onTap: () {
                             Navigator.of(context).pop();
                             context.read<ChatCubit>().onEvent(
-                                  SelectConversationEvent(chat.id),
-                                );
+                              SelectConversationEvent(chat.id),
+                            );
                           },
                         );
                       },

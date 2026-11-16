@@ -1,4 +1,3 @@
-
 import 'package:fitness_app/features/chat/data/models/ollama/ollama_message_dto.dart';
 import 'package:fitness_app/features/chat/data/models/ollama/ollama_tool_dto.dart';
 import 'package:json_annotation/json_annotation.dart';

@@ -44,25 +44,23 @@ class ChatRepositoryImpl implements ChatRepository {
     });
   }
 
+  @override
+  Future<BaseResponse<ChatPageEntity>> getChats({
+    required String userId,
+    int limit = 20,
+    ChatEntity? lastChat,
+  }) async {
+    return executeFirestoreCall(() async {
+      final chatPage = await _firestoreDataSource.getChats(
+        userId: userId,
+        limit: limit,
+        startAfterUpdatedAt: lastChat?.updatedAt,
+        startAfterId: lastChat?.id,
+      );
 
-@override
-Future<BaseResponse<ChatPageEntity>> getChats({
-  required String userId,
-  int limit = 20,
-  ChatEntity? lastChat,
-}) async {
-  return executeFirestoreCall(() async {
-    final chatPage = await _firestoreDataSource.getChats(
-      userId: userId,
-      limit: limit,
-      startAfterUpdatedAt: lastChat?.updatedAt,
-      startAfterId: lastChat?.id,
-    );
-
-    return chatPage.toEntity();
-  });
-}
-
+      return chatPage.toEntity();
+    });
+  }
 
   @override
   Future<BaseResponse<void>> deleteChat({required String chatId}) async {
@@ -112,70 +110,66 @@ Future<BaseResponse<ChatPageEntity>> getChats({
     });
   }
 
-  
-@override
-Future<BaseResponse<ChatResponseEntity>> requestCoachResponseWithTools({
-  required List<MessageEntity> conversationHistory,
-  required List<String> muscleGroups,
-  required List<String> difficulties,
-  required List<String> equipment,
-  required List<String> mealCategories,
-  required List<String> mealAreas,
-}) async {
-  final systemPrompt = CoachPromptAndSchemas.buildSystemPrompt(
-    muscleGroups: muscleGroups,
-    difficulties: difficulties,
-    equipment: equipment,
-    mealCategories: mealCategories,
-    mealAreas: mealAreas,
-  );
+  @override
+  Future<BaseResponse<ChatResponseEntity>> requestCoachResponseWithTools({
+    required List<MessageEntity> conversationHistory,
+    required List<String> muscleGroups,
+    required List<String> difficulties,
+    required List<String> equipment,
+    required List<String> mealCategories,
+    required List<String> mealAreas,
+  }) async {
+    final systemPrompt = CoachPromptAndSchemas.buildSystemPrompt(
+      muscleGroups: muscleGroups,
+      difficulties: difficulties,
+      equipment: equipment,
+      mealCategories: mealCategories,
+      mealAreas: mealAreas,
+    );
 
-  final availableTools = CoachPromptAndSchemas.buildAvailableTools(
-    muscleGroups: muscleGroups,
-    difficulties: difficulties,
-    equipment: equipment,
-    mealCategories: mealCategories,
-    mealAreas: mealAreas,
-  );
+    final availableTools = CoachPromptAndSchemas.buildAvailableTools(
+      muscleGroups: muscleGroups,
+      difficulties: difficulties,
+      equipment: equipment,
+      mealCategories: mealCategories,
+      mealAreas: mealAreas,
+    );
 
-  final request = OllamaChatRequestDto.forTools(
-    model: ApiStrings.ollamaModel,
-    messages: _buildMessages(
-      systemPrompt: systemPrompt,
-      conversationHistory: conversationHistory,
-    ),
-    tools: availableTools.map(OllamaToolDto.fromEntity).toList(),
-  );
+    final request = OllamaChatRequestDto.forTools(
+      model: ApiStrings.ollamaModel,
+      messages: _buildMessages(
+        systemPrompt: systemPrompt,
+        conversationHistory: conversationHistory,
+      ),
+      tools: availableTools.map(OllamaToolDto.fromEntity).toList(),
+    );
 
-  return _requestChatResponse(request);
-}
+    return _requestChatResponse(request);
+  }
 
+  @override
+  Future<BaseResponse<ChatResponseEntity>> requestStructuredCoachResponse({
+    required List<MessageEntity> conversationHistory,
+  }) async {
+    final systemPrompt = CoachPromptAndSchemas.buildSystemPrompt(
+      muscleGroups: [],
+      difficulties: [],
+      equipment: [],
+      mealCategories: [],
+      mealAreas: [],
+    );
 
- 
-@override
-Future<BaseResponse<ChatResponseEntity>> requestStructuredCoachResponse({
-  required List<MessageEntity> conversationHistory,
-}) async {
-  final systemPrompt = CoachPromptAndSchemas.buildSystemPrompt(
-    muscleGroups: [],
-    difficulties: [],
-    equipment: [],
-    mealCategories: [],
-    mealAreas: [],
-  );
+    final request = OllamaChatRequestDto.forStructuredResponse(
+      model: ApiStrings.ollamaModel,
+      messages: _buildMessages(
+        systemPrompt: systemPrompt,
+        conversationHistory: conversationHistory,
+      ),
+      format: CoachPromptAndSchemas.answerSchema,
+    );
 
-  final request = OllamaChatRequestDto.forStructuredResponse(
-    model: ApiStrings.ollamaModel,
-    messages: _buildMessages(
-      systemPrompt: systemPrompt,
-      conversationHistory: conversationHistory,
-    ),
-    format: CoachPromptAndSchemas.answerSchema,
-  );
-
-  return _requestChatResponse(request);
-}
-
+    return _requestChatResponse(request);
+  }
 
   Future<BaseResponse<ChatResponseEntity>> _requestChatResponse(
     OllamaChatRequestDto request,

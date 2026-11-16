@@ -16,9 +16,7 @@ void main() {
   setUp(() {
     mockProfileCubit = MockProfileCubit();
     when(() => mockProfileCubit.state).thenReturn(const ProfileState());
-    when(
-      () => mockProfileCubit.stream,
-    ).thenAnswer((_) => const Stream.empty());
+    when(() => mockProfileCubit.stream).thenAnswer((_) => const Stream.empty());
 
     if (getIt.isRegistered<ProfileCubit>()) {
       getIt.unregister<ProfileCubit>();

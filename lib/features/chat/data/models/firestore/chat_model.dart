@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fitness_app/features/chat/domain/entities/chat_entity.dart';
 

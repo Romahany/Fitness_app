@@ -1,4 +1,3 @@
-
 import 'package:equatable/equatable.dart';
 
 class ChatEntity extends Equatable {
@@ -24,13 +23,13 @@ class ChatEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        title,
-        userId,
-        createdAt,
-        updatedAt,
-        lastMessage,
-        totalTokens,
-        isDeleted,
-      ];
+    id,
+    title,
+    userId,
+    createdAt,
+    updatedAt,
+    lastMessage,
+    totalTokens,
+    isDeleted,
+  ];
 }

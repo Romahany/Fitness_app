@@ -1,4 +1,3 @@
-
 import 'dart:async';
 
 import 'package:injectable/injectable.dart';
@@ -19,7 +18,7 @@ class LoginCubit extends BaseCubit<LoginState, CommonUiEvent> {
   final AppAuthCubit _appAuthCubit;
 
   LoginCubit(this._loginUseCase, this._appAuthCubit)
-      : super(const LoginState());
+    : super(const LoginState());
 
   void onEvent(LoginEvent event) {
     switch (event) {

@@ -20,19 +20,12 @@ class ToolCallEntity extends Equatable {
   final Map<String, dynamic> arguments;
   final String? id;
 
-  const ToolCallEntity({
-    required this.name,
-    required this.arguments,
-    this.id,
-  });
+  const ToolCallEntity({required this.name, required this.arguments, this.id});
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'function': {
-          'name': name,
-          'arguments': arguments,
-        },
-      };
+    'id': id,
+    'function': {'name': name, 'arguments': arguments},
+  };
 
   factory ToolCallEntity.fromJson(Map<String, dynamic> json) {
     final function = Map<String, dynamic>.from(

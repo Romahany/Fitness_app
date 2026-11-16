@@ -49,17 +49,20 @@ class ChatView extends StatelessWidget {
             bloc: getIt<ProfileCubit>(),
             builder: (context, state) {
               return Column(
-                      children: [
-                        Text('${l10n.hi} , ${state.profileState.data?.firstName} ${state.profileState.data?.lastName}', style: theme.textTheme.titleMedium),
-                        Text(
-                          l10n.iamYourSmartCoach,
-                          style: theme.textTheme.bodyLarge!.copyWith(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 20,
-                          ),
-                        ),
-                      ],
-                    );
+                children: [
+                  Text(
+                    '${l10n.hi} , ${state.profileState.data?.firstName} ${state.profileState.data?.lastName}',
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  Text(
+                    l10n.iamYourSmartCoach,
+                    style: theme.textTheme.bodyLarge!.copyWith(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20,
+                    ),
+                  ),
+                ],
+              );
             },
           ),
         ),

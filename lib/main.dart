@@ -61,9 +61,10 @@ class FitnessApp extends StatelessWidget {
                       ),
                     );
 
-                    Navigator.of(
-                      context,
-                    ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      AppRoutes.login,
+                      (route) => false,
+                    );
                   }
                 },
                 child: child!,
