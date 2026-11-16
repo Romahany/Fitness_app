@@ -1,13 +1,16 @@
 import 'dart:convert';
 
 import 'package:fitness_app/config/base/base_response.dart';
+import 'package:fitness_app/config/errors/app_failure.dart';
 import 'package:fitness_app/features/chat/domain/entities/chat_entity.dart';
+import 'package:fitness_app/features/chat/domain/entities/catalog_filter_metadata.dart';
 import 'package:fitness_app/features/chat/domain/entities/chat_tool_definition_entity.dart';
 import 'package:fitness_app/features/chat/domain/entities/message_entity.dart';
 import 'package:fitness_app/features/chat/domain/repository/catalog_repository.dart';
 import 'package:fitness_app/features/chat/domain/repository/chat_repository.dart';
 import 'package:fitness_app/features/exercise/domain/entities/exercise_entity.dart';
 import 'package:fitness_app/features/meals/domain/entities/meal_entity.dart';
+import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 
 class ChatOutput {
@@ -17,6 +20,7 @@ class ChatOutput {
   final List<MealEntity> meals;
   final int totalTokensUsed;
   final bool isNearTokenLimit;
+
   const ChatOutput({
     required this.chatId,
     required this.answerText,
@@ -33,6 +37,7 @@ class SendMessageUseCase {
   final ChatRepository _chatRepository;
 
   SendMessageUseCase(this._catalogRepository, this._chatRepository);
+
   static const int maxSessionTokens = 12000;
   static const int maxToolLoops = 4;
 
@@ -40,65 +45,97 @@ class SendMessageUseCase {
     required String userId,
     String? chatId,
     required String userText,
+    void Function(String chatId)? onChatCreated,
+  }) async {
+    try {
+      return await _sendMessage(
+        userId: userId,
+        chatId: chatId,
+        userText: userText,
+        onChatCreated: onChatCreated,
+      );
+    } on AppFailure catch (failure) {
+      return Error<ChatOutput>(failure);
+    } catch (error, stackTrace) {
+      debugPrint('Chat send error => $error\n$stackTrace');
+      return const Error<ChatOutput>(UnknownFailure());
+    }
+  }
+
+  Future<BaseResponse<ChatOutput>> _sendMessage({
+    required String userId,
+    String? chatId,
+    required String userText,
+    void Function(String chatId)? onChatCreated,
   }) async {
     String activeChatId = chatId?.trim() ?? '';
     if (activeChatId.isEmpty) {
       final title = userText.length > 30
           ? '${userText.substring(0, 30)}...'
           : userText;
-      var createChate = await _chatRepository.createChat(
+      final createChatResult = await _chatRepository.createChat(
         title: title,
         userId: userId,
       );
-      switch (createChate) {
-        case Success<ChatEntity>(data: final createNewChat):
-          activeChatId = createNewChat.id;
-
+      switch (createChatResult) {
+        case Success<ChatEntity>(data: final newChat):
+          activeChatId = newChat.id;
+          onChatCreated?.call(activeChatId);
         case Error<ChatEntity>():
-          return Error(createChate.failure);
+          return Error(createChatResult.failure);
       }
     }
-    final filterMetadata = await _catalogRepository.getFilterMetadata();
-    final historyMessage = await _chatRepository.getChatHistory(
+
+    final filterMetadata = await _getFilterMetadata();
+    final historyResult = await _chatRepository.getChatHistory(
       chatId: activeChatId,
       limit: 20,
     );
-    final List<MessageEntity> previousMessages = switch (historyMessage) {
-      Success(data: final list) => list.reversed.toList(),
-      Error() => <MessageEntity>[],
-    };
-    final int sumOfTokens = previousMessages.fold(
+    final List<MessageEntity> previousMessages;
+    switch (historyResult) {
+      case Success(data: final messages):
+        previousMessages = messages.reversed.toList();
+      case Error(failure: final failure):
+        return Error(failure);
+    }
+
+    final totalPreviousTokens = previousMessages.fold<int>(
       0,
       (sum, message) => sum + message.tokensUsed,
     );
+    final isRetryingLastUserMessage =
+        previousMessages.isNotEmpty &&
+        previousMessages.last.role == 'user' &&
+        previousMessages.last.content == userText;
+    final userMessage = isRetryingLastUserMessage
+        ? previousMessages.last
+        : MessageEntity(
+            id: '',
+            chatId: activeChatId,
+            content: userText,
+            role: 'user',
+            createdAt: DateTime.now(),
+          );
 
-    final userMessage = MessageEntity(
-      id: '',
-      chatId: activeChatId,
-      content: userText,
-      role: 'user',
-      createdAt: DateTime.now(),
-    );
-
-    final saveUserMsgResult = await _chatRepository.saveMessage(
-      message: userMessage,
-    );
-    switch (saveUserMsgResult) {
-      case Success<MessageEntity>():
-        break;
-      case Error<MessageEntity>(failure: final failure):
-        return Error(failure);
+    if (!isRetryingLastUserMessage) {
+      final saveUserMessageResult = await _chatRepository.saveMessage(
+        message: userMessage,
+      );
+      switch (saveUserMessageResult) {
+        case Success<MessageEntity>():
+          break;
+        case Error<MessageEntity>(failure: final failure):
+          return Error(failure);
+      }
     }
 
     final recentHistory = previousMessages.length > 12
         ? previousMessages.sublist(previousMessages.length - 12)
         : previousMessages;
-
-    final List<MessageEntity> workingHistory = [...recentHistory, userMessage];
-
-    // =======================================================================
-    // هنعمل هنناااا ال loop tool call
-    // =======================================================================
+    final workingHistory = [...recentHistory];
+    if (!isRetryingLastUserMessage) {
+      workingHistory.add(userMessage);
+    }
 
     bool thereIsTool = false;
     int loopCount = 0;
@@ -138,35 +175,36 @@ class SendMessageUseCase {
         ),
       );
 
-      if (!response.hasToolCalls) {
-        break;
-      }
+      if (!response.hasToolCalls) break;
       thereIsTool = true;
 
-      // =====================================================================
-      //هنا هننده عل ى الداتا بيز من شغل علي
-      // =====================================================================
       for (final ToolCallEntity call in response.toolCalls) {
-        final Map<String, dynamic> args = call.arguments;
+        final args = call.arguments;
 
         if (call.name == 'get_exercises') {
-          // 1. نبحث في exercises.db عن طريق CatalogRepository
-          final exercises = await _catalogRepository.getExercisesForTool(
-            muscleGroup: args['muscle_group']?.toString(),
-            difficulty: args['difficulty']?.toString(),
-            equipment: args['equipment']?.toString(),
+          final exercises = await _getExercisesForTool(
+            muscleGroup: _validatedChoice(
+              args['muscle_group'],
+              filterMetadata.muscleGroups,
+            ),
+            difficulty: _validatedChoice(
+              args['difficulty'],
+              filterMetadata.difficulties,
+            ),
+            equipment: _validatedChoice(
+              args['equipment'],
+              filterMetadata.equipments,
+            ),
           );
-
-          // 2. نسجل الـ IDs الحقيقية ونجهز JSON خفيف يفهمه الموديل
-          final rowsJson = exercises.map((e) {
-            validExerciseCandidates.add(e.id);
+          final rowsJson = exercises.map((exercise) {
+            validExerciseCandidates.add(exercise.id);
             return {
-              'id': e.id,
-              'name': e.exercise,
-              'name_ar': e.nameAr,
-              'muscle_group': e.targetMuscleGroup,
-              'difficulty': e.difficultyLevel,
-              'equipment': e.primaryEquipment,
+              'id': exercise.id,
+              'name': exercise.exercise,
+              'name_ar': exercise.nameAr,
+              'muscle_group': exercise.targetMuscleGroup,
+              'difficulty': exercise.difficultyLevel,
+              'equipment': exercise.primaryEquipment,
             };
           }).toList();
 
@@ -182,30 +220,30 @@ class SendMessageUseCase {
             ),
           );
         } else if (call.name == 'get_meals') {
-          final meals = await _catalogRepository.getMealsForTool(
-            category: args['category']?.toString(),
-            area: args['area']?.toString(),
-            minProtein: (args['min_protein'] as num?)?.toDouble(),
-            maxKcal: (args['max_kcal'] as num?)?.toDouble(),
-            vegetarian: args['vegetarian'] as bool?,
+          final vegetarian = args['vegetarian'];
+          final meals = await _getMealsForTool(
+            category: _validatedChoice(
+              args['category'],
+              filterMetadata.mealCategories,
+            ),
+            area: _validatedChoice(args['area'], filterMetadata.mealAreas),
+            minProtein: _boundedNumber(args['min_protein'], maximum: 500),
+            maxKcal: _boundedNumber(args['max_kcal'], maximum: 10000),
+            vegetarian: vegetarian is bool ? vegetarian : null,
           );
-
-          // 2. نسجل الـ IDs الحقيقية ونجهز JSON خفيف يفهمه الموديل
-          final rowsJson = meals.map((m) {
-            validMealCandidates.add(m.id);
+          final rowsJson = meals.map((meal) {
+            validMealCandidates.add(meal.id);
             return {
-              'id': m.id,
-              'name': m.name,
-              'name_ar': m.nameAr,
-              'category': m.category,
-              'area': m.area,
-              'kcal': m.kcal,
-              'protein_g': m.proteinG,
+              'id': meal.id,
+              'name': meal.name,
+              'name_ar': meal.nameAr,
+              'category': meal.category,
+              'area': meal.area,
+              'kcal': meal.kcal,
+              'protein_g': meal.proteinG,
             };
           }).toList();
 
-
-          // 3. نضيف نتيجة الأداة في workingHistory بدور 'tool'
           workingHistory.add(
             MessageEntity(
               id: '',
@@ -221,16 +259,13 @@ class SendMessageUseCase {
       }
     }
 
-
-    //answer schemaa
-    String finalAnswerText = '';
+    String finalAnswerText;
     List<String> chosenExerciseIds = [];
     List<String> chosenMealIds = [];
 
     if (!thereIsTool) {
       finalAnswerText = lastAssistantContent;
     } else {
-      // لو استخدم أداة، نطلب من أولاما تحويل الرد إلى JSON مطابق للـ answerSchema
       final structuredResult = await _chatRepository
           .requestStructuredCoachResponse(
             conversationHistory: [
@@ -251,36 +286,23 @@ class SendMessageUseCase {
         Error(failure: final failure) => throw failure,
       };
 
-      // نضيف الـ Tokens المستهلكة في خطوة الـ Formatting إلى حصالة هذا الدور
       usedTokenOllama += structuredResponse.totalTokensUsed;
-
-      // نفك الـ JSON الراجع من الموديل
       final parsed =
           jsonDecode(structuredResponse.content) as Map<String, dynamic>;
       finalAnswerText = parsed['answer'] as String? ?? lastAssistantContent;
 
-      // نفلتر الـ IDs ضد القوائم الحقيقية لضمان عدم وجود أي ID مخترع
       chosenExerciseIds = ((parsed['exercise_ids'] as List?) ?? const [])
-          .map((e) => e.toString())
+          .map((id) => id.toString())
           .where(validExerciseCandidates.contains)
           .toList();
-
       chosenMealIds = ((parsed['meal_ids'] as List?) ?? const [])
-          .map((e) => e.toString())
+          .map((id) => id.toString())
           .where(validMealCandidates.contains)
           .toList();
     }
 
-    // جلب الكيانات الكاملة (بالصور واليوتيوب والمكونات) من SQLite لعرض الكروت
-    final List<ExerciseEntity> exercises = await _catalogRepository
-        .getExercisesByIds(chosenExerciseIds);
-    final List<MealEntity> meals = await _catalogRepository.getMealsByIds(
-      chosenMealIds,
-    );
-
-    // =======================================================================
-    // الخطوة 6: حفظ رد الـ Assistant في Firestore وإرجاع النتيجة للـ Cubit
-    // =======================================================================
+    final exercises = await _getExercisesByIds(chosenExerciseIds);
+    final meals = await _getMealsByIds(chosenMealIds);
 
     final saveAssistantResult = await _chatRepository.saveMessage(
       message: MessageEntity(
@@ -298,8 +320,7 @@ class SendMessageUseCase {
       return Error(failure);
     }
 
-    final int updatedTotalTokens = sumOfTokens + usedTokenOllama;
-
+    final updatedTotalTokens = totalPreviousTokens + usedTokenOllama;
     return Success(
       ChatOutput(
         chatId: activeChatId,
@@ -310,5 +331,92 @@ class SendMessageUseCase {
         isNearTokenLimit: updatedTotalTokens >= (maxSessionTokens * 0.85),
       ),
     );
+  }
+
+  Future<CatalogFilterMetadata> _getFilterMetadata() async {
+    try {
+      return await _catalogRepository.getFilterMetadata();
+    } catch (error, stackTrace) {
+      debugPrint('Chat catalog metadata unavailable => $error\n$stackTrace');
+      return const CatalogFilterMetadata(
+        muscleGroups: [],
+        difficulties: [],
+        equipments: [],
+        mealCategories: [],
+        mealAreas: [],
+      );
+    }
+  }
+
+  String? _validatedChoice(Object? value, List<String> options) {
+    if (value is! String) return null;
+    final normalizedValue = value.trim().toLowerCase();
+    for (final option in options) {
+      if (option.toLowerCase() == normalizedValue) return option;
+    }
+    return null;
+  }
+
+  double? _boundedNumber(Object? value, {required double maximum}) {
+    if (value is! num) return null;
+    final number = value.toDouble();
+    if (!number.isFinite || number < 0) return null;
+    return number > maximum ? maximum : number;
+  }
+
+  Future<List<ExerciseEntity>> _getExercisesForTool({
+    String? muscleGroup,
+    String? difficulty,
+    String? equipment,
+  }) async {
+    try {
+      return await _catalogRepository.getExercisesForTool(
+        muscleGroup: muscleGroup,
+        difficulty: difficulty,
+        equipment: equipment,
+      );
+    } catch (error, stackTrace) {
+      debugPrint('Chat exercise catalog unavailable => $error\n$stackTrace');
+      return const [];
+    }
+  }
+
+  Future<List<MealEntity>> _getMealsForTool({
+    String? category,
+    String? area,
+    double? minProtein,
+    double? maxKcal,
+    bool? vegetarian,
+  }) async {
+    try {
+      return await _catalogRepository.getMealsForTool(
+        category: category,
+        area: area,
+        minProtein: minProtein,
+        maxKcal: maxKcal,
+        vegetarian: vegetarian,
+      );
+    } catch (error, stackTrace) {
+      debugPrint('Chat meal catalog unavailable => $error\n$stackTrace');
+      return const [];
+    }
+  }
+
+  Future<List<ExerciseEntity>> _getExercisesByIds(List<String> ids) async {
+    try {
+      return await _catalogRepository.getExercisesByIds(ids);
+    } catch (error, stackTrace) {
+      debugPrint('Chat exercise details unavailable => $error\n$stackTrace');
+      return const [];
+    }
+  }
+
+  Future<List<MealEntity>> _getMealsByIds(List<String> ids) async {
+    try {
+      return await _catalogRepository.getMealsByIds(ids);
+    } catch (error, stackTrace) {
+      debugPrint('Chat meal details unavailable => $error\n$stackTrace');
+      return const [];
+    }
   }
 }

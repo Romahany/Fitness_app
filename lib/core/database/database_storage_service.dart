@@ -5,6 +5,8 @@ abstract class DatabaseStorageService {
 
   Future<bool> fileExists(String path);
 
+  Future<int> getFileSize(String path);
+
   Future<bool> directoryExists(String path);
 
   Future<void> createDirectory(String path, {bool recursive = false});

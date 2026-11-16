@@ -15,6 +15,9 @@ class DatabaseStorageServiceImpl implements DatabaseStorageService {
   Future<bool> fileExists(String path) => File(path).exists();
 
   @override
+  Future<int> getFileSize(String path) => File(path).length();
+
+  @override
   Future<bool> directoryExists(String path) => Directory(path).exists();
 
   @override
