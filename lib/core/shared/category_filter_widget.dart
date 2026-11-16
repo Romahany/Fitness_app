@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil_plus/flutter_screenutil_plus.dart';
 
-import '../theme/app_colors/app_colors.dart';
+import 'package:fitness_app/core/theme/app_colors/app_colors.dart';
 
 class CategoryTabBar extends StatelessWidget {
   final List<String> categories;
@@ -27,6 +27,7 @@ class CategoryTabBar extends StatelessWidget {
           ? ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: categories.length,
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
               itemBuilder: (context, index) {
                 return _buildCategoryItem(context, categories[index]);
               },

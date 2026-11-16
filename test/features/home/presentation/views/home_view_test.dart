@@ -1,8 +1,3 @@
-import 'package:fitness_app/config/base/base_state.dart';
-import 'package:fitness_app/config/di/di.dart';
-import 'package:fitness_app/features/home/presentation/manager/home_cubit.dart';
-import 'package:fitness_app/features/home/presentation/manager/home_event.dart';
-import 'package:fitness_app/features/home/presentation/manager/home_state.dart';
 import 'package:fitness_app/features/home/presentation/views/home_view.dart';
 import 'package:fitness_app/features/home/presentation/views/widgets/sections/home_categories.dart';
 import 'package:fitness_app/features/home/presentation/views/widgets/sections/home_food_categories.dart';

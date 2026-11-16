@@ -242,18 +242,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get categoryTrainer => 'المدرب';
 
   @override
-  String get recommendationToDay => 'توصية اليوم';
-
-  @override
-  String get strengthenYour => 'تمارين تقوي ';
-
-  @override
-  String tasksCount(int count) {
-    return '$count مهمة';
-  }
-
-  @override
-  String get noPopularTraining => 'لا يوجد تمارين متاحة';
+  String get recommendationToday => 'توصية اليوم';
 
   @override
   String get jogging => 'الجري الخفيف';
@@ -314,6 +303,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get strengthenBody => 'تمارين تقوّي جسمك';
+
+  @override
+  String tasksCount(int count) {
+    return '$count مهمة';
+  }
 
   @override
   String get homeTab => 'الرئيسية';
@@ -727,9 +721,4 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get dataNotAvailable => 'البيانات غير متوفرة حالياً.';
-
-  @override
-  String failedToBuildPopularTraining(String muscleName) {
-    return 'فشل بناء التدريب الشائع لـ $muscleName';
-  }
 }

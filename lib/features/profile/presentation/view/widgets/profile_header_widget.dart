@@ -16,7 +16,11 @@ class ProfileHeaderWidget extends StatelessWidget {
     return ColoredBox(
       color: AppColors.surface,
       child: Center(
-        child: Icon(Icons.person, size: 52.r, color: AppColors.textSecondary),
+        child: Icon(
+          Icons.person,
+          size: 52.r,
+          color: AppColors.textSecondary,
+        ),
       ),
     );
   }
@@ -40,7 +44,10 @@ class ProfileHeaderWidget extends StatelessWidget {
               height: 104.r,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.primary, width: 3.r),
+                border: Border.all(
+                  color: AppColors.primary,
+                  width: 3.r,
+                ),
               ),
               child: ClipOval(
                 child: photo.isEmpty

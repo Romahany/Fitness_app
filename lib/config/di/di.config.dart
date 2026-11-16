@@ -43,7 +43,7 @@ import '../../features/auth/presentation/register/manager/register_cubit.dart'
     as _i784;
 import '../../features/exercise/api/client/exercise_api_client.dart' as _i248;
 import '../../features/exercise/api/remote/exercise_remote_data_source_impl.dart'
-    as _i669;
+    as _i670;
 import '../../features/exercise/data/data_source/remote/exercise_remote_data_source.dart'
     as _i27;
 import '../../features/exercise/data/repo_impl/exercise_repo_impl.dart'
@@ -57,19 +57,13 @@ import '../../features/exercise/domain/use_cases/get_muscle_groups_use_case.dart
     as _i593;
 import '../../features/exercise/domain/use_cases/get_muscles_by_group_use_case.dart'
     as _i559;
-import '../../features/exercise/domain/use_cases/get_random_muscles_use_case.dart'
-    as _i423;
 import '../../features/exercise/presentation/exercise_details/manager/exercise_details_cubit.dart'
     as _i944;
 import '../../features/exercise/presentation/workout_categories/manager/workout_categories_cubit.dart'
     as _i355;
-import '../../features/home/domain/services/random_service.dart' as _i922;
-import '../../features/home/domain/use_case/get_popular_training_use_case.dart'
-    as _i384;
-import '../../features/home/presentation/manager/home_cubit.dart' as _i629;
 import '../../features/meals/api/client/meals_api_client.dart' as _i293;
-import '../../features/meals/api/meals_remote_data_source_impl.dart/meals_remote_data_source_impl.dart'
-    as _i396;
+import '../../features/meals/api/remote/meals_remote_data_source_impl.dart'
+    as _i669;
 import '../../features/meals/data/data_source/remote/meals_remote_data_source.dart'
     as _i452;
 import '../../features/meals/data/repo_impl/meals_repo_impl.dart' as _i459;
@@ -115,7 +109,6 @@ extension GetItInjectableX on _i174.GetIt {
     final appModule = _$AppModule();
     final secureStorageModule = _$SecureStorageModule();
     final dioModule = _$DioModule();
-    gh.singleton<_i922.RandomService>(() => _i922.RandomService());
     gh.lazySingleton<_i281.AssetBundle>(() => appModule.assetBundle);
     gh.lazySingleton<_i558.FlutterSecureStorage>(
       () => secureStorageModule.secureStorage,
@@ -128,17 +121,17 @@ extension GetItInjectableX on _i174.GetIt {
       () => dioModule.mealDio(),
       instanceName: 'mealDio',
     );
+    gh.lazySingleton<_i264.AppInterceptors>(
+      () => _i264.AppInterceptors(
+        gh<_i558.FlutterSecureStorage>(),
+        gh<_i760.AppAuthCubit>(),
+      ),
+    );
     gh.factory<_i773.MealsCubit>(
       () => _i773.MealsCubit(
         gh<_i1032.GetMealsCategoriesUseCase>(),
         gh<_i385.GetMealsByCategoryUseCase>(),
         gh<_i514.GetMealDetailsUseCase>(),
-      ),
-    );
-    gh.lazySingleton<_i264.AppInterceptors>(
-      () => _i264.AppInterceptors(
-        gh<_i558.FlutterSecureStorage>(),
-        gh<_i760.AppAuthCubit>(),
       ),
     );
     gh.singleton<_i293.MealsApiClient>(
@@ -167,7 +160,7 @@ extension GetItInjectableX on _i174.GetIt {
       ),
     );
     gh.factory<_i452.MealsRemoteDataSource>(
-      () => _i396.MealsRemoteDataSourceImpl(
+      () => _i669.MealsRemoteDataSourceImpl(
         apiClient: gh<_i293.MealsApiClient>(),
       ),
     );
@@ -177,7 +170,7 @@ extension GetItInjectableX on _i174.GetIt {
       ),
     );
     gh.factory<_i27.ExerciseRemoteDataSource>(
-      () => _i669.ExerciseRemoteDataSourceImpl(gh<_i248.ExerciseApiClient>()),
+      () => _i670.ExerciseRemoteDataSourceImpl(gh<_i248.ExerciseApiClient>()),
     );
     gh.factory<_i749.MealsRepo>(
       () => _i459.MealsRepoImpl(
@@ -204,12 +197,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i1027.ProfileUpdateUseCase>(
       () => _i1027.ProfileUpdateUseCase(gh<_i364.ProfileRepo>()),
-    );
-    gh.factory<_i384.GetPopularTrainingUseCase>(
-      () => _i384.GetPopularTrainingUseCase(
-        gh<_i628.ExerciseRepo>(),
-        gh<_i922.RandomService>(),
-      ),
     );
     gh.factory<_i514.GetMealDetailsUseCase>(
       () => _i514.GetMealDetailsUseCase(gh<_i749.MealsRepo>()),
@@ -241,9 +228,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i559.GetMusclesByGroupUseCase>(
       () => _i559.GetMusclesByGroupUseCase(gh<_i628.ExerciseRepo>()),
     );
-    gh.factory<_i423.GetRandomMusclesUseCase>(
-      () => _i423.GetRandomMusclesUseCase(gh<_i628.ExerciseRepo>()),
-    );
     gh.factory<_i355.WorkoutCategoriesCubit>(
       () => _i355.WorkoutCategoriesCubit(
         gh<_i593.GetMuscleGroupsUseCase>(),
@@ -273,15 +257,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i839.ForgetPasswordUserCase>(),
         gh<_i397.VerifyOtpUserCase>(),
         gh<_i1012.ResetPasswordUserCase>(),
-      ),
-    );
-    gh.factory<_i629.HomeCubit>(
-      () => _i629.HomeCubit(
-        gh<_i423.GetRandomMusclesUseCase>(),
-        gh<_i593.GetMuscleGroupsUseCase>(),
-        gh<_i559.GetMusclesByGroupUseCase>(),
-        gh<_i1032.GetMealsCategoriesUseCase>(),
-        gh<_i384.GetPopularTrainingUseCase>(),
       ),
     );
     gh.factory<_i889.LoginCubit>(

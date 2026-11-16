@@ -9,14 +9,14 @@ abstract class ApiStrings {
   static const String signin = '/auth/signin';
   static const String changePassword = '/auth/change-password';
   static const String uploadPhoto =
-      '/auth/upload-photo'; // PUT (Bearer, form-data: photo, max 4MB)
+      '/auth/upload-photo';
   static const String profileData = '/auth/profile-data';
   static const String logout = '/auth/logout';
-  static const String forgotPassword = '/auth/forgotPassword'; // POST
-  static const String verifyResetCode = '/auth/verifyResetCode'; // POST
-  static const String resetPassword = '/auth/resetPassword'; // PUT
-  static String get deleteMe => '/auth/deleteMe'; // DELETE
-  static String get editProfile => '/auth/editProfile'; // PUT (Bearer)
+  static const String forgotPassword = '/auth/forgotPassword';
+  static const String verifyResetCode = '/auth/verifyResetCode';
+  static const String resetPassword = '/auth/resetPassword';
+  static String get deleteMe => '/auth/deleteMe';
+  static String get editProfile => '/auth/editProfile';
 
   static const String levels = '/levels';
 

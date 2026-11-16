@@ -243,18 +243,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryTrainer => 'Trainer';
 
   @override
-  String get recommendationToDay => 'Recommendation To Day';
-
-  @override
-  String get strengthenYour => 'Exercises That Strengthen Your';
-
-  @override
-  String tasksCount(int count) {
-    return '$count tasks';
-  }
-
-  @override
-  String get noPopularTraining => 'No popular training available';
+  String get recommendationToday => 'Recommendation for today';
 
   @override
   String get jogging => 'Jogging';
@@ -315,6 +304,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get strengthenBody => 'Exercises that strengthen your body';
+
+  @override
+  String tasksCount(int count) {
+    return '$count tasks';
+  }
 
   @override
   String get homeTab => 'Home';
@@ -732,9 +726,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataNotAvailable => 'Data is currently unavailable.';
-
-  @override
-  String failedToBuildPopularTraining(String muscleName) {
-    return 'Failed to build popular training for $muscleName';
-  }
 }

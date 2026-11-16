@@ -93,10 +93,7 @@
   "categoryYoga": "اليوغا",
   "categoryAerobics": "الأيروبكس",
   "categoryTrainer": "المدرب",
-  "recommendationToDay": "توصية اليوم",
-  "strengthenYour": "تمارين تقوي ",
-  "tasksCount": "{count} تمرين",
-  "noPopularTraining": "لا يوجد تمارين متاحة",
+  "recommendationToday": "توصية اليوم",
   "jogging": "الجري الخفيف",
   "pushUp": "تمرين الضغط",
   "squat": "تمرين القرفصاء",
@@ -309,7 +306,7 @@
   "failedToBuildPopularTraining": "فشل بناء التدريب الشائع لـ {muscleName}",
   "@failedToBuildPopularTraining": {
     "placeholders": {
-      "muscleName": {
+      "muscleName":
         "type": "String"
       }
     }

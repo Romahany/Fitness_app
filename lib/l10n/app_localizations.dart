@@ -554,29 +554,11 @@ abstract class AppLocalizations {
   /// **'Trainer'**
   String get categoryTrainer;
 
-  /// No description provided for @recommendationToDay.
+  /// No description provided for @recommendationToday.
   ///
   /// In en, this message translates to:
-  /// **'Recommendation To Day'**
-  String get recommendationToDay;
-
-  /// No description provided for @strengthenYour.
-  ///
-  /// In en, this message translates to:
-  /// **'Exercises That Strengthen Your'**
-  String get strengthenYour;
-
-  /// No description provided for @tasksCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} tasks'**
-  String tasksCount(int count);
-
-  /// No description provided for @noPopularTraining.
-  ///
-  /// In en, this message translates to:
-  /// **'No popular training available'**
-  String get noPopularTraining;
+  /// **'Recommendation for today'**
+  String get recommendationToday;
 
   /// No description provided for @jogging.
   ///
@@ -697,6 +679,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Exercises that strengthen your body'**
   String get strengthenBody;
+
+  /// No description provided for @tasksCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} tasks'**
+  String tasksCount(int count);
 
   /// No description provided for @homeTab.
   ///
@@ -1471,12 +1459,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Data is currently unavailable.'**
   String get dataNotAvailable;
-
-  /// No description provided for @failedToBuildPopularTraining.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to build popular training for {muscleName}'**
-  String failedToBuildPopularTraining(String muscleName);
 }
 
 class _AppLocalizationsDelegate
