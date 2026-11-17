@@ -776,6 +776,12 @@ abstract class AppLocalizations {
   /// **'Hi {name}, I am your smart coach'**
   String chatGreeting(String name);
 
+  /// No description provided for @iamYourSmartCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'I am your smart coach'**
+  String get iamYourSmartCoach;
+
   /// No description provided for @chatHelpPrompt.
   ///
   /// In en, this message translates to:
@@ -1477,6 +1483,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Data is currently unavailable.'**
   String get dataNotAvailable;
+
+  /// No description provided for @typeYourMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Your Message'**
+  String get typeYourMessage;
+
+  /// No description provided for @hi.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi'**
+  String get hi;
+
+  /// No description provided for @noChatYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No previous conversations yet'**
+  String get noChatYet;
+
+  /// No description provided for @chatLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'This conversation has reached the maximum length. Please start a new conversation.'**
+  String get chatLimitReached;
+
+  /// No description provided for @newConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'New Conversation'**
+  String get newConversation;
 }
 
 class _AppLocalizationsDelegate

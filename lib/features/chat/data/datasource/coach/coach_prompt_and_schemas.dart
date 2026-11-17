@@ -42,18 +42,9 @@ Allowed meal filters:
         parameters: {
           'type': 'object',
           'properties': {
-            'muscle_group': {
-              'type': 'string',
-              'enum': muscleGroups,
-            },
-            'difficulty': {
-              'type': 'string',
-              'enum': difficulties,
-            },
-            'equipment': {
-              'type': 'string',
-              'enum': equipment,
-            },
+            'muscle_group': {'type': 'string', 'enum': muscleGroups},
+            'difficulty': {'type': 'string', 'enum': difficulties},
+            'equipment': {'type': 'string', 'enum': equipment},
           },
         },
       ),
@@ -63,14 +54,8 @@ Allowed meal filters:
         parameters: {
           'type': 'object',
           'properties': {
-            'category': {
-              'type': 'string',
-              'enum': mealCategories,
-            },
-            'area': {
-              'type': 'string',
-              'enum': mealAreas,
-            },
+            'category': {'type': 'string', 'enum': mealCategories},
+            'area': {'type': 'string', 'enum': mealAreas},
             'min_protein': {'type': 'number'},
             'max_kcal': {'type': 'number'},
             'vegetarian': {'type': 'boolean'},

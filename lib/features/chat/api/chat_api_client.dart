@@ -11,9 +11,8 @@ part 'chat_api_client.g.dart';
 @RestApi()
 abstract class ChatApiClient {
   @factoryMethod
-  factory ChatApiClient(
-    @Named(ApiStrings.namedOllamaDio) Dio dio,
-  ) = _ChatApiClient;
+  factory ChatApiClient(@Named(ApiStrings.namedOllamaDio) Dio dio) =
+      _ChatApiClient;
 
   @POST(ApiStrings.ollamaChat)
   Future<OllamaChatResponseDto> requestChatResponse(

@@ -4,6 +4,7 @@ import 'package:fitness_app/config/di/di.dart';
 import 'package:fitness_app/features/app/presentation/cubit/auth/app_auth_cubit.dart';
 import 'package:fitness_app/features/app/presentation/cubit/auth/app_auth_state.dart';
 import 'package:fitness_app/features/app/presentation/cubit/auth/app_auth_ui_event.dart';
+import 'package:fitness_app/features/app/presentation/cubit/locale/app_locale_cubit.dart';
 import 'package:fitness_app/features/auth/presentation/forget_password/manager/forget_password_cubit.dart';
 import 'package:fitness_app/features/auth/presentation/forget_password/manager/forget_password_state.dart';
 import 'package:fitness_app/features/auth/presentation/onboarding/views/onboarding_view.dart';
@@ -14,10 +15,13 @@ import 'package:mocktail/mocktail.dart';
 
 class MockAppAuthCubit extends Mock implements AppAuthCubit {}
 
+class MockAppLocaleCubit extends Mock implements AppLocaleCubit {}
+
 class MockForgetPasswordCubit extends Mock implements ForgetPasswordCubit {}
 
 void main() {
   late MockAppAuthCubit mockAppAuthCubit;
+  late MockAppLocaleCubit mockAppLocaleCubit;
   late MockForgetPasswordCubit mockForgetPasswordCubit;
   late StreamController<AppAuthUiEvent> authUiEventController;
   late StreamController<BaseUiEvent> forgetPasswordUiEventController;
@@ -25,6 +29,7 @@ void main() {
 
   setUp(() {
     mockAppAuthCubit = MockAppAuthCubit();
+    mockAppLocaleCubit = MockAppLocaleCubit();
     mockForgetPasswordCubit = MockForgetPasswordCubit();
     authUiEventController = StreamController<AppAuthUiEvent>.broadcast();
     forgetPasswordUiEventController = StreamController<BaseUiEvent>.broadcast();
@@ -37,6 +42,12 @@ void main() {
       () => mockAppAuthCubit.uiEventStream,
     ).thenAnswer((_) => authUiEventController.stream);
     when(() => mockAppAuthCubit.close()).thenAnswer((_) async {});
+
+    when(() => mockAppLocaleCubit.state).thenReturn(const Locale('en'));
+    when(
+      () => mockAppLocaleCubit.stream,
+    ).thenAnswer((_) => const Stream.empty());
+    when(() => mockAppLocaleCubit.close()).thenAnswer((_) async {});
 
     when(
       () => mockForgetPasswordCubit.state,
@@ -54,6 +65,11 @@ void main() {
     }
     getIt.registerSingleton<AppAuthCubit>(mockAppAuthCubit);
 
+    if (getIt.isRegistered<AppLocaleCubit>()) {
+      getIt.unregister<AppLocaleCubit>();
+    }
+    getIt.registerSingleton<AppLocaleCubit>(mockAppLocaleCubit);
+
     if (getIt.isRegistered<ForgetPasswordCubit>()) {
       getIt.unregister<ForgetPasswordCubit>();
     }
@@ -66,6 +82,9 @@ void main() {
     forgetPasswordStateController.close();
     if (getIt.isRegistered<AppAuthCubit>()) {
       getIt.unregister<AppAuthCubit>();
+    }
+    if (getIt.isRegistered<AppLocaleCubit>()) {
+      getIt.unregister<AppLocaleCubit>();
     }
     if (getIt.isRegistered<ForgetPasswordCubit>()) {
       getIt.unregister<ForgetPasswordCubit>();

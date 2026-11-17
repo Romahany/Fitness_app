@@ -32,7 +32,10 @@ void main() {
 
   final validManifestJson = jsonEncode({
     'version': 1,
-    'files': {'db1.db': db1Hash, 'db2.db': db2Hash},
+    'files': {
+      'db1.db': {'size': db1Bytes.length, 'sha256': db1Hash},
+      'db2.db': {'size': db2Bytes.length, 'sha256': db2Hash},
+    },
   });
 
   ByteData createByteData(Uint8List bytes) {
@@ -55,13 +58,16 @@ void main() {
     ).thenAnswer((_) async => dbDirPath);
     when(() => mockStorage.fileExists(any())).thenAnswer((_) async => false);
     when(
+      () => mockStorage.getFileSize(any()),
+    ).thenAnswer((_) async => db1Bytes.length);
+    when(
       () => mockBundle.loadString(manifestPath),
     ).thenAnswer((_) async => validManifestJson);
   });
 
   group('DatabaseAssetInstaller', () {
     test(
-      'skips installation when saved version matches and all files exist',
+      'skips installation when saved version and file sizes match',
       () async {
         when(() => mockPrefs.getInt('local_db_manifest_version')).thenReturn(1);
         when(
@@ -256,7 +262,9 @@ void main() {
     test('parses string version correctly from manifest', () async {
       final stringVersionManifest = jsonEncode({
         'version': '2',
-        'files': {'db1.db': db1Hash},
+        'files': {
+          'db1.db': {'size': db1Bytes.length, 'sha256': db1Hash},
+        },
       });
 
       when(
@@ -291,7 +299,7 @@ void main() {
     test(
       'throws StateError and aborts when SHA-256 hash does not match',
       () async {
-        final corruptedBytes = Uint8List.fromList([99, 99, 99]);
+        final corruptedBytes = Uint8List.fromList([99, 99, 99, 99]);
 
         when(
           () => mockPrefs.getInt('local_db_manifest_version'),
@@ -320,6 +328,54 @@ void main() {
         );
         verifyNever(() => mockStorage.renameFile(any(), any()));
         verifyNever(() => mockPrefs.setInt(any(), any()));
+      },
+    );
+
+    test(
+      'reinstalls existing files when a file size differs from the manifest',
+      () async {
+        when(() => mockPrefs.getInt('local_db_manifest_version')).thenReturn(1);
+        when(() => mockStorage.fileExists(any())).thenAnswer((_) async => true);
+        when(
+          () => mockStorage.getFileSize(p.join(dbDirPath, 'db1.db')),
+        ).thenAnswer((_) async => db1Bytes.length - 1);
+        when(
+          () => mockStorage.createDirectory(dbDirPath, recursive: true),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockBundle.load('assets/databases/db1.db'),
+        ).thenAnswer((_) async => createByteData(db1Bytes));
+        when(
+          () => mockBundle.load('assets/databases/db2.db'),
+        ).thenAnswer((_) async => createByteData(db2Bytes));
+        when(
+          () => mockStorage.writeBytes(any(), any(), flush: true),
+        ).thenAnswer((_) async {});
+        when(() => mockStorage.deleteFile(any())).thenAnswer((_) async {});
+        when(
+          () => mockStorage.renameFile(any(), any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockPrefs.setInt('local_db_manifest_version', 1),
+        ).thenAnswer((_) async => true);
+
+        await installer.ensureDatabasesInstalled();
+
+        verify(
+          () => mockStorage.getFileSize(p.join(dbDirPath, 'db1.db')),
+        ).called(1);
+        verify(
+          () => mockStorage.renameFile(
+            p.join(dbDirPath, 'db1.db.tmp'),
+            p.join(dbDirPath, 'db1.db'),
+          ),
+        ).called(1);
+        verify(
+          () => mockStorage.renameFile(
+            p.join(dbDirPath, 'db2.db.tmp'),
+            p.join(dbDirPath, 'db2.db'),
+          ),
+        ).called(1);
       },
     );
   });

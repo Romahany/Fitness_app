@@ -11,6 +11,8 @@ import 'catalog_local_data_source.dart';
 
 @LazySingleton(as: CatalogLocalDataSource)
 class CatalogLocalDataSourceImpl implements CatalogLocalDataSource {
+  static const int _maxToolResults = 50;
+
   final ExercisesDatabase _exercisesDatabase;
   final MealsDatabase _mealsDatabase;
 
@@ -39,24 +41,48 @@ class CatalogLocalDataSourceImpl implements CatalogLocalDataSource {
 
       Future<List<String>> distinct(
         Database db,
-        String table,
-        String col,
+        String query,
+        String column,
       ) async {
-        final rows = await db.rawQuery(
-          'SELECT DISTINCT $col FROM $table WHERE $col IS NOT NULL ORDER BY $col',
-        );
-        return rows.map((r) => r[col].toString()).toList();
+        final rows = await db.rawQuery(query);
+        return rows.map((row) => row[column].toString()).toList();
       }
 
-      final muscleGroups = await distinct(
-        exDb,
-        'exercise_card',
-        'muscle_group',
-      );
-      final difficulties = await distinct(exDb, 'exercise_card', 'difficulty');
-      final equipments = await distinct(exDb, 'exercise_card', 'equipment');
-      final mealCategories = await distinct(mlDb, 'meal_card', 'category');
-      final mealAreas = await distinct(mlDb, 'meal_card', 'area');
+      final muscleGroups = await distinct(exDb, '''
+        SELECT DISTINCT mg.name AS value
+        FROM exercise AS e
+        JOIN muscle_group AS mg ON mg.id = e.muscle_group_id
+        WHERE mg.name IS NOT NULL
+        ORDER BY mg.name
+        ''', 'value');
+      final difficulties = await distinct(exDb, '''
+        SELECT DISTINCT difficulty.name AS value
+        FROM exercise AS e
+        JOIN difficulty_level AS difficulty ON difficulty.id = e.difficulty_id
+        WHERE difficulty.name IS NOT NULL
+        ORDER BY difficulty.name
+        ''', 'value');
+      final equipments = await distinct(exDb, '''
+        SELECT DISTINCT equipment.name AS value
+        FROM exercise AS e
+        JOIN equipment ON equipment.id = e.primary_equipment_id
+        WHERE equipment.name IS NOT NULL
+        ORDER BY equipment.name
+        ''', 'value');
+      final mealCategories = await distinct(mlDb, '''
+        SELECT DISTINCT category.name AS value
+        FROM meal
+        JOIN meal_category AS category ON category.id = meal.category_id
+        WHERE category.name IS NOT NULL
+        ORDER BY category.name
+        ''', 'value');
+      final mealAreas = await distinct(mlDb, '''
+        SELECT DISTINCT area.name AS value
+        FROM meal
+        JOIN meal_area AS area ON area.id = meal.area_id
+        WHERE area.name IS NOT NULL
+        ORDER BY area.name
+        ''', 'value');
 
       if (kDebugMode) {
         debugPrint(
@@ -98,39 +124,48 @@ class CatalogLocalDataSourceImpl implements CatalogLocalDataSource {
     final args = <Object?>[];
 
     if (muscleGroup != null && muscleGroup.isNotEmpty) {
-      where.add('LOWER(muscle_group) = LOWER(?)');
+      where.add('LOWER(muscle_group.name) = LOWER(?)');
       args.add(muscleGroup);
     }
     if (difficulty != null && difficulty.isNotEmpty) {
-      where.add('LOWER(difficulty) = LOWER(?)');
+      where.add('LOWER(difficulty.name) = LOWER(?)');
       args.add(difficulty);
     }
     if (equipment != null && equipment.isNotEmpty) {
-      where.add('LOWER(equipment) = LOWER(?)');
+      where.add('LOWER(primary_equipment.name) = LOWER(?)');
       args.add(equipment);
     }
 
-    final results = await db.query(
-      'exercise_card',
-      columns: [
-        'id',
-        'name',
-        'name_ar',
-        'muscle_group AS muscle_group_id',
-        'difficulty AS difficulty_id',
-        'equipment AS primary_equipment_id',
-        'body_region AS body_region_id',
-        'mechanics',
-      ],
-      where: where.isEmpty ? null : where.join(' AND '),
-      whereArgs: args,
-      orderBy: 'popularity DESC, difficulty_rank ASC, name ASC',
-      limit: limit,
+    final boundedLimit = _boundLimit(limit);
+    final results = await db.rawQuery(
+      '''
+      SELECT
+        exercise.id,
+        exercise.name,
+        exercise.name_ar,
+        muscle_group.name AS muscle_group_id,
+        difficulty.name AS difficulty_id,
+        primary_equipment.name AS primary_equipment_id,
+        exercise.body_region_id,
+        exercise.mechanics
+      FROM exercise
+      LEFT JOIN muscle_group ON muscle_group.id = exercise.muscle_group_id
+      LEFT JOIN difficulty_level AS difficulty
+        ON difficulty.id = exercise.difficulty_id
+      LEFT JOIN equipment AS primary_equipment
+        ON primary_equipment.id = exercise.primary_equipment_id
+      ${where.isEmpty ? '' : 'WHERE ${where.join(' AND ')}'}
+      ORDER BY exercise.popularity DESC, exercise.difficulty_rank ASC,
+        exercise.name ASC
+      LIMIT ?
+      ''',
+      [...args, boundedLimit],
     );
 
     if (kDebugMode) {
       debugPrint(
-        'CatalogLocalDataSource: getExercisesForTool found ${results.length} matches',
+        'CatalogLocalDataSource: getExercisesForTool found ${results.length} matches '
+        '(limit=$boundedLimit)',
       );
     }
 
@@ -159,11 +194,11 @@ class CatalogLocalDataSourceImpl implements CatalogLocalDataSource {
     final args = <Object?>[];
 
     if (category != null && category.isNotEmpty) {
-      where.add('LOWER(category) = LOWER(?)');
+      where.add('LOWER(category.name) = LOWER(?)');
       args.add(category);
     }
     if (area != null && area.isNotEmpty) {
-      where.add('LOWER(area) = LOWER(?)');
+      where.add('LOWER(area.name) = LOWER(?)');
       args.add(area);
     }
     if (minProtein != null) {
@@ -178,32 +213,44 @@ class CatalogLocalDataSourceImpl implements CatalogLocalDataSource {
       where.add('vegetarian = 1');
     }
 
-    final results = await db.query(
-      'meal_card',
-      columns: [
-        'id',
-        'name',
-        'name_ar',
-        'category AS category_id',
-        'area AS area_id',
-        'kcal',
-        'protein_g',
-        'carbs_g',
-        'fat_g',
-      ],
-      where: where.isEmpty ? null : where.join(' AND '),
-      whereArgs: args,
-      orderBy: '(protein_g IS NULL), protein_g DESC, popularity DESC',
-      limit: limit,
+    final boundedLimit = _boundLimit(limit);
+    final results = await db.rawQuery(
+      '''
+      SELECT
+        meal.id,
+        meal.name,
+        meal.name_ar,
+        category.name AS category_id,
+        area.name AS area_id,
+        meal.kcal,
+        meal.protein_g,
+        meal.carbs_g,
+        meal.fat_g
+      FROM meal
+      LEFT JOIN meal_category AS category ON category.id = meal.category_id
+      LEFT JOIN meal_area AS area ON area.id = meal.area_id
+      ${where.isEmpty ? '' : 'WHERE ${where.join(' AND ')}'}
+      ORDER BY (meal.protein_g IS NULL), meal.protein_g DESC,
+        meal.popularity DESC
+      LIMIT ?
+      ''',
+      [...args, boundedLimit],
     );
 
     if (kDebugMode) {
       debugPrint(
-        'CatalogLocalDataSource: getMealsForTool found ${results.length} matches',
+        'CatalogLocalDataSource: getMealsForTool found ${results.length} matches '
+        '(limit=$boundedLimit)',
       );
     }
 
     return MealsDatabaseResponse.fromRows(results);
+  }
+
+  int _boundLimit(int limit) {
+    if (limit < 1) return 1;
+    if (limit > _maxToolResults) return _maxToolResults;
+    return limit;
   }
 
   Future<String> _getExerciseTableName(Database db) async {

@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'database_storage_service.dart';
 
-@injectable
+@lazySingleton
 class DatabaseAssetInstaller {
   static const String _versionKey = 'local_db_manifest_version';
   static const String _manifestPath = 'assets/databases/manifest.json';
@@ -17,10 +17,24 @@ class DatabaseAssetInstaller {
   final SharedPreferences _prefs;
   final AssetBundle _bundle;
   final DatabaseStorageService _storage;
+  Future<void>? _installationFuture;
 
   DatabaseAssetInstaller(this._prefs, this._bundle, this._storage);
 
-  Future<void> ensureDatabasesInstalled() async {
+  Future<void> ensureDatabasesInstalled() {
+    return _installationFuture ??= _installAndResetOnFailure();
+  }
+
+  Future<void> _installAndResetOnFailure() async {
+    try {
+      await _installDatabases();
+    } catch (_) {
+      _installationFuture = null;
+      rethrow;
+    }
+  }
+
+  Future<void> _installDatabases() async {
     final manifestStr = await _bundle.loadString(_manifestPath);
     final manifest = jsonDecode(manifestStr) as Map<String, dynamic>;
 
@@ -32,15 +46,18 @@ class DatabaseAssetInstaller {
     final dbDirPath = await _storage.getDatabasesPath();
     final savedVersion = _prefs.getInt(_versionKey);
 
-    bool allFilesExist = true;
-    for (final fileName in files.keys) {
-      if (!await _storage.fileExists(p.join(dbDirPath, fileName))) {
-        allFilesExist = false;
+    bool allFilesMatchManifest = true;
+    for (final entry in files.entries) {
+      final metadata = entry.value as Map<String, dynamic>;
+      final filePath = p.join(dbDirPath, entry.key);
+      if (!await _storage.fileExists(filePath) ||
+          await _storage.getFileSize(filePath) != metadata['size']) {
+        allFilesMatchManifest = false;
         break;
       }
     }
 
-    if (savedVersion == manifestVersion && allFilesExist) {
+    if (savedVersion == manifestVersion && allFilesMatchManifest) {
       if (kDebugMode) {
         debugPrint(
           '🔄 DatabaseAssetInstaller: Databases already up to date (version: $manifestVersion). Skipping install.',
@@ -53,13 +70,22 @@ class DatabaseAssetInstaller {
 
     for (final entry in files.entries) {
       final fileName = entry.key;
-      final expectedHash = (entry.value as String).toLowerCase();
+      final metadata = entry.value as Map<String, dynamic>;
+      final expectedSize = metadata['size'] as int;
+      final expectedHash = (metadata['sha256'] as String).toLowerCase();
 
       final ByteData data = await _bundle.load('assets/databases/$fileName');
       final Uint8List bytes = data.buffer.asUint8List(
         data.offsetInBytes,
         data.lengthInBytes,
       );
+
+      if (bytes.lengthInBytes != expectedSize) {
+        throw StateError(
+          'DatabaseAssetInstaller: Size mismatch for $fileName. '
+          'Expected: $expectedSize, Actual: ${bytes.lengthInBytes}',
+        );
+      }
 
       final actualHash = sha256.convert(bytes).toString().toLowerCase();
       if (actualHash != expectedHash) {

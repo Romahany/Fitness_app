@@ -67,7 +67,7 @@ class FakeAuthRepo implements AuthRepo {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-class FakeRemoteDataSource implements RemoteDataSource {
+class FakeAuthRemoteDataSource implements AuthRemoteDataSource {
   int callCount = 0;
   LoginRequest? lastRequest;
   LoginResponse? nextResponse;
@@ -81,7 +81,12 @@ class FakeRemoteDataSource implements RemoteDataSource {
     return nextResponse ??
         LoginResponse(message: 'Success', token: 'fake.jwt.token');
   }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
+
+typedef FakeRemoteDataSource = FakeAuthRemoteDataSource;
 
 class FakeAuthApiClient implements AuthApiClient {
   int callCount = 0;

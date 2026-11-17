@@ -1,4 +1,3 @@
-
 import 'package:equatable/equatable.dart';
 import 'package:fitness_app/features/chat/domain/entities/chat_tool_definition_entity.dart';
 
@@ -31,16 +30,16 @@ class MessageEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        chatId,
-        content,
-        role,
-        createdAt,
-        toolName,
-        toolCallId,
-        toolCalls,
-        exerciseIds,
-        mealIds,
-        tokensUsed,
-      ];
+    id,
+    chatId,
+    content,
+    role,
+    createdAt,
+    toolName,
+    toolCallId,
+    toolCalls,
+    exerciseIds,
+    mealIds,
+    tokensUsed,
+  ];
 }

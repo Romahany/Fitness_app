@@ -27,19 +27,17 @@ class OllamaMessageDto {
   });
 
   const OllamaMessageDto.system(String prompt)
-      : role = 'system',
-        content = prompt,
-        toolCalls = null,
-        toolName = null,
-        toolCallId = null;
+    : role = 'system',
+      content = prompt,
+      toolCalls = null,
+      toolName = null,
+      toolCallId = null;
 
   factory OllamaMessageDto.fromEntity(MessageEntity entity) {
     return OllamaMessageDto(
       role: entity.role,
       content: entity.content,
-      toolCalls: entity.toolCalls
-          .map(OllamaToolCallDto.fromEntity)
-          .toList(),
+      toolCalls: entity.toolCalls.map(OllamaToolCallDto.fromEntity).toList(),
       toolName: entity.toolName,
       toolCallId: entity.toolCallId,
     );

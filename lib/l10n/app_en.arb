@@ -168,6 +168,7 @@
       }
     }
   },
+  "iamYourSmartCoach": "I am your smart coach",
   "chatHelpPrompt": "How can I assist you today?",
   "getStarted": "Get started",
   "previousConversations": "Previous conversations",
@@ -303,6 +304,11 @@
   "couldNotLoadMeals": "We could not load the meals. Please try again.",
   "tryAgain": "Try again",
   "couldNotLoadCategories": "Could not load categories",
-  "dataNotAvailable": "Data is currently unavailable."
+  "dataNotAvailable": "Data is currently unavailable.",
+  "typeYourMessage": "Enter Your Message",
+  "hi": "Hi",
+  "noChatYet":"No previous conversations yet",
+  "chatLimitReached": "This conversation has reached the maximum length. Please start a new conversation.",
+  "newConversation": "New Conversation"
 
 }

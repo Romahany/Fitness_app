@@ -42,9 +42,10 @@ class ChatMessageModel {
       toolCallId: data['toolCallId'] as String?,
       toolCalls: (data['toolCalls'] as List? ?? const [])
           .whereType<Map>()
-          .map((toolCall) => ToolCallEntity.fromJson(
-                Map<String, dynamic>.from(toolCall),
-              ))
+          .map(
+            (toolCall) =>
+                ToolCallEntity.fromJson(Map<String, dynamic>.from(toolCall)),
+          )
           .toList(),
       exerciseIds: (data['exerciseIds'] as List? ?? const [])
           .map((id) => id.toString())

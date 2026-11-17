@@ -1,4 +1,3 @@
-
 import 'package:equatable/equatable.dart';
 
 class AppAuthState extends Equatable {
@@ -7,9 +6,7 @@ class AppAuthState extends Equatable {
   const AppAuthState({this.userId});
 
   AppAuthState copyWith({String? userId}) {
-    return AppAuthState(
-      userId: userId ?? this.userId,
-    );
+    return AppAuthState(userId: userId ?? this.userId);
   }
 
   @override

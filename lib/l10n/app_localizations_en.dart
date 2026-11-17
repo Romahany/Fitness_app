@@ -364,6 +364,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get iamYourSmartCoach => 'I am your smart coach';
+
+  @override
   String get chatHelpPrompt => 'How can I assist you today?';
 
   @override
@@ -737,4 +740,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataNotAvailable => 'Data is currently unavailable.';
+
+  @override
+  String get typeYourMessage => 'Enter Your Message';
+
+  @override
+  String get hi => 'Hi';
+
+  @override
+  String get noChatYet => 'No previous conversations yet';
+
+  @override
+  String get chatLimitReached =>
+      'This conversation has reached the maximum length. Please start a new conversation.';
+
+  @override
+  String get newConversation => 'New Conversation';
 }

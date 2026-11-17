@@ -1,14 +1,10 @@
-
 import 'package:fitness_app/features/chat/data/models/firestore/chat_model.dart';
 import 'package:fitness_app/features/chat/data/models/firestore/chat_page_model.dart';
 import 'package:fitness_app/features/chat/data/models/firestore/chat_message_model.dart';
 import 'package:fitness_app/features/chat/domain/entities/chat_tool_definition_entity.dart';
 
 abstract interface class ChatFirestoreDataSource {
-  Future<ChatModel> createChat({
-    required String title,
-    required String userId,
-  });
+  Future<ChatModel> createChat({required String title, required String userId});
 
   Future<ChatPageModel> getChats({
     required String userId,
@@ -17,9 +13,7 @@ abstract interface class ChatFirestoreDataSource {
     String? startAfterId,
   });
 
-  Future<void> deleteChat({
-    required String chatId,
-  });
+  Future<void> deleteChat({required String chatId});
 
   Future<ChatMessageModel> saveMessage({
     required String chatId,

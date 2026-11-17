@@ -303,5 +303,11 @@
   "couldNotLoadMeals": "تعذر تحميل الوجبات. يرجى المحاولة مرة أخرى.",
   "tryAgain": "حاول مرة أخرى",
   "couldNotLoadCategories": "تعذر تحميل الفئات",
-  "dataNotAvailable": "البيانات غير متوفرة حالياً."
+  "dataNotAvailable": "البيانات غير متوفرة حالياً.",
+  "typeYourMessage": "أكتب رسالتك",
+  "hi": "أهلاً بك",
+  "iamYourSmartCoach": "أنا مدربك الذكي",
+  "noChatYet":"لا توجد محادثات سابقة بعد",
+  "chatLimitReached": "اقتربت هذه المحادثة من الحد الأقصى. يُرجى بدء محادثة جديدة.",
+  "newConversation": "محادثة جديدة"
 }

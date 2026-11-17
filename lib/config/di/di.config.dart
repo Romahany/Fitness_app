@@ -66,6 +66,13 @@ import '../../features/chat/data/repository/catalog_repository_impl.dart'
 import '../../features/chat/data/repository/chat_repository_impl.dart' as _i88;
 import '../../features/chat/domain/repository/catalog_repository.dart' as _i139;
 import '../../features/chat/domain/repository/chat_repository.dart' as _i477;
+import '../../features/chat/domain/use_cases/create_chat_use_case.dart'
+    as _i160;
+import '../../features/chat/domain/use_cases/send_message_use_case.dart'
+    as _i461;
+import '../../features/chat/presentation/manager/chat_cubit.dart' as _i770;
+import '../../features/chat/presentation/view/widget/prefrence_borading_chat.dart'
+    as _i982;
 import '../../features/exercise/api/client/exercise_api_client.dart' as _i248;
 import '../../features/exercise/api/remote/exercise_remote_data_source_impl.dart'
     as _i670;
@@ -122,7 +129,7 @@ import '../../features/profile/presentation/manager/profile_cubit.dart'
 import '../dio/app_interceptor.dart' as _i264;
 import '../dio/dio_module.dart' as _i977;
 import '../utils/secure_storage_module.dart' as _i327;
-import 'app_module.dart' as _i461;
+import 'app_module.dart' as _i462;
 import 'firebase_module.dart' as _i616;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -147,6 +154,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i145.DatabaseStorageService>(
       () => _i8.DatabaseStorageServiceImpl(),
+    );
+    gh.lazySingleton<_i982.PrefrenceBoradingChat>(
+      () => _i982.PrefrenceBoradingChat(gh<_i460.SharedPreferences>()),
     );
     gh.lazySingleton<_i760.AppAuthCubit>(
       () => _i760.AppAuthCubit(gh<_i558.FlutterSecureStorage>()),
@@ -189,7 +199,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i139.CatalogRepository>(
       () => _i204.CatalogRepositoryImpl(gh<_i872.CatalogLocalDataSource>()),
     );
-    gh.factory<_i851.DatabaseAssetInstaller>(
+    gh.lazySingleton<_i851.DatabaseAssetInstaller>(
       () => _i851.DatabaseAssetInstaller(
         gh<_i460.SharedPreferences>(),
         gh<_i281.AssetBundle>(),
@@ -269,6 +279,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i487.ChatRemoteDataSource>(),
       ),
     );
+    gh.factory<_i461.SendMessageUseCase>(
+      () => _i461.SendMessageUseCase(
+        gh<_i139.CatalogRepository>(),
+        gh<_i477.ChatRepository>(),
+      ),
+    );
     gh.factory<_i514.GetMealDetailsUseCase>(
       () => _i514.GetMealDetailsUseCase(gh<_i749.MealsRepo>()),
     );
@@ -281,11 +297,23 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i170.ProfileLogoutUseCase>(),
       ),
     );
+    gh.factory<_i160.CreateChatUseCase>(
+      () => _i160.CreateChatUseCase(gh<_i477.ChatRepository>()),
+    );
     gh.factory<_i1012.ResetPasswordUserCase>(
       () => _i1012.ResetPasswordUserCase(gh<_i171.AuthRepo>()),
     );
     gh.factory<_i397.VerifyOtpUserCase>(
       () => _i397.VerifyOtpUserCase(gh<_i171.AuthRepo>()),
+    );
+    gh.factory<_i770.ChatCubit>(
+      () => _i770.ChatCubit(
+        gh<_i461.SendMessageUseCase>(),
+        gh<_i160.CreateChatUseCase>(),
+        gh<_i477.ChatRepository>(),
+        gh<_i139.CatalogRepository>(),
+        gh<_i558.FlutterSecureStorage>(),
+      ),
     );
     gh.factory<_i773.MealsCubit>(
       () => _i773.MealsCubit.create(
@@ -348,7 +376,7 @@ extension GetItInjectableX on _i174.GetIt {
   }
 }
 
-class _$AppModule extends _i461.AppModule {}
+class _$AppModule extends _i462.AppModule {}
 
 class _$FirebaseModule extends _i616.FirebaseModule {}
 

@@ -1,4 +1,3 @@
-
 import 'package:fitness_app/config/base/base_cubit.dart';
 import 'package:fitness_app/core/constants/storage_keys.dart';
 import 'package:fitness_app/features/app/presentation/cubit/auth/app_auth_state.dart';
