@@ -27,24 +27,15 @@ void main() {
       updatedAt: DateTime(2026),
     );
     when(
-      () => chatRepository.createChat(
-        title: title,
-        userId: 'user-id',
-      ),
+      () => chatRepository.createChat(title: title, userId: 'user-id'),
     ).thenAnswer((_) async => Success(chat));
 
-    final result = await useCase(
-      userId: 'user-id',
-      userText: userText,
-    );
+    final result = await useCase(userId: 'user-id', userText: userText);
 
     expect(result, isA<Success<ChatEntity>>());
     expect((result as Success<ChatEntity>).data, chat);
     verify(
-      () => chatRepository.createChat(
-        title: title,
-        userId: 'user-id',
-      ),
+      () => chatRepository.createChat(title: title, userId: 'user-id'),
     ).called(1);
   });
 }

@@ -257,7 +257,7 @@ class _MessageViewState extends State<MessageView> {
                                 onPressed: () {
                                   _chatCubit.onEvent(const StartNewChatEvent());
                                 },
-                                child:  Text(l10n.newConversation),
+                                child: Text(l10n.newConversation),
                               ),
                             ],
                           ),

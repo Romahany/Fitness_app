@@ -139,10 +139,10 @@ void main() {
     expect(cubit.state.messagesState.data?.first.text, 'Hello');
     expect(cubit.state.messagesState.data?.last.text, 'Hello there!');
     expect(cubit.state.messagesState.data?.last.isUser, isFalse);
-    expect(
-      cubit.state.conversationHistory.map((message) => message.role),
-      ['user', 'assistant'],
-    );
+    expect(cubit.state.conversationHistory.map((message) => message.role), [
+      'user',
+      'assistant',
+    ]);
     verify(
       () => createChatUseCase(userId: 'user-id', userText: 'Hello'),
     ).called(1);
@@ -239,18 +239,13 @@ void main() {
     await cubit.onEvent(const SelectConversationEvent('chat-123'));
     await cubit.onEvent(const SendMessageEvent('Follow-up'));
 
-    expect(
-      cubit.state.conversationHistory.map((message) => message.content),
-      [
-        'Earlier question',
-        'Earlier answer',
-        'Follow-up',
-        'Follow-up answer',
-      ],
-    );
-    verify(
-      () => chatRepository.getChatHistory(chatId: 'chat-123'),
-    ).called(1);
+    expect(cubit.state.conversationHistory.map((message) => message.content), [
+      'Earlier question',
+      'Earlier answer',
+      'Follow-up',
+      'Follow-up answer',
+    ]);
+    verify(() => chatRepository.getChatHistory(chatId: 'chat-123')).called(1);
   });
 }
 

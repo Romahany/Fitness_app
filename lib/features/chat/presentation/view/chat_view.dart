@@ -82,7 +82,7 @@ class ChatView extends StatelessWidget {
                     Text(
                       l10n.chatHelpPrompt,
                       style: theme.textTheme.titleLarge,
-                    ),  
+                    ),
                     Gap(8),
                     Padding(
                       padding: const EdgeInsets.all(18.0),

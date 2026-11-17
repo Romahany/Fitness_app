@@ -25,7 +25,6 @@ class MealsDatabase {
 
   Future<Database> _openDatabase() async {
     try {
-
       final dir = await _storageService.getDatabasesPath();
       final dbPath = p.join(dir, 'meals.db');
       if (kDebugMode) {

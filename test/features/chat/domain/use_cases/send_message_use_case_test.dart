@@ -40,52 +40,49 @@ void main() {
     );
   });
 
-  test(
-    'uses supplied history without loading chat history',
-    () async {
-      final previousMessage = MessageEntity(
-        id: 'message-id',
-        chatId: 'chat-id',
-        content: 'My message',
-        role: 'user',
-        createdAt: DateTime(2026),
-      );
-      when(
-        () => chatRepository.requestCoachResponseWithTools(
-          conversationHistory: [previousMessage],
-          muscleGroups: any(named: 'muscleGroups'),
-          difficulties: any(named: 'difficulties'),
-          equipment: any(named: 'equipment'),
-          mealCategories: any(named: 'mealCategories'),
-          mealAreas: any(named: 'mealAreas'),
-        ),
-      ).thenAnswer(
-        (_) async => const Error<ChatResponseEntity>(UnknownFailure()),
-      );
-
-      final result = await useCase(
-        chatId: 'chat-id',
-        userText: 'My message',
+  test('uses supplied history without loading chat history', () async {
+    final previousMessage = MessageEntity(
+      id: 'message-id',
+      chatId: 'chat-id',
+      content: 'My message',
+      role: 'user',
+      createdAt: DateTime(2026),
+    );
+    when(
+      () => chatRepository.requestCoachResponseWithTools(
         conversationHistory: [previousMessage],
-      );
+        muscleGroups: any(named: 'muscleGroups'),
+        difficulties: any(named: 'difficulties'),
+        equipment: any(named: 'equipment'),
+        mealCategories: any(named: 'mealCategories'),
+        mealAreas: any(named: 'mealAreas'),
+      ),
+    ).thenAnswer(
+      (_) async => const Error<ChatResponseEntity>(UnknownFailure()),
+    );
 
-      expect(result, isA<Error<ChatOutput>>());
-      expect((result as Error<ChatOutput>).failure, isA<UnknownFailure>());
-      verifyNever(
-        () => chatRepository.getChatHistory(chatId: 'chat-id', limit: 20),
-      );
-      verify(
-        () => chatRepository.requestCoachResponseWithTools(
-          conversationHistory: [previousMessage],
-          muscleGroups: [],
-          difficulties: [],
-          equipment: [],
-          mealCategories: [],
-          mealAreas: [],
-        ),
-      ).called(1);
-    },
-  );
+    final result = await useCase(
+      chatId: 'chat-id',
+      userText: 'My message',
+      conversationHistory: [previousMessage],
+    );
+
+    expect(result, isA<Error<ChatOutput>>());
+    expect((result as Error<ChatOutput>).failure, isA<UnknownFailure>());
+    verifyNever(
+      () => chatRepository.getChatHistory(chatId: 'chat-id', limit: 20),
+    );
+    verify(
+      () => chatRepository.requestCoachResponseWithTools(
+        conversationHistory: [previousMessage],
+        muscleGroups: [],
+        difficulties: [],
+        equipment: [],
+        mealCategories: [],
+        mealAreas: [],
+      ),
+    ).called(1);
+  });
 
   test(
     'returns catalog metadata failure without loading chat history',
