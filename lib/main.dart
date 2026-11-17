@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:fitness_app/config/di/di.dart';
 import 'package:fitness_app/config/routing/app_routes.dart';
 import 'package:fitness_app/config/routing/generate_routes.dart';
+import 'package:fitness_app/core/database/database_asset_installer.dart';
 import 'package:fitness_app/core/shared/base_ui_event_listener.dart';
 import 'package:fitness_app/core/theme/app_colors/app_colors.dart';
 import 'package:fitness_app/core/theme/app_themes/app_theme.dart';
@@ -22,6 +23,7 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await configureDependencies();
+  await getIt<DatabaseAssetInstaller>().ensureDatabasesInstalled();
   await getIt<AppAuthCubit>().restoreUserId();
   await getIt<AppLocaleCubit>().load();
 

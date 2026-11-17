@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fitness_app/core/shared/custom_blur_card.dart';
 import 'package:fitness_app/core/theme/app_colors/app_colors.dart';
 import 'package:fitness_app/features/chat/presentation/manager/chat_cubit.dart';
@@ -19,6 +21,7 @@ class PreviousConversationsDrawer extends StatelessWidget {
     final theme = Theme.of(context);
     final radius = BorderRadius.horizontal(left: Radius.circular(24.r));
     final l10n = AppLocalizations.of(context)!;
+    stdout.write('build PreviousConversationsDrawer');
 
     return Drawer(
       width: MediaQuery.sizeOf(context).width * 0.75,

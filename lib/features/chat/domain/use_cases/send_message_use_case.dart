@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:fitness_app/config/base/base_response.dart';
 import 'package:fitness_app/config/errors/app_failure.dart';
-import 'package:fitness_app/features/chat/domain/entities/chat_entity.dart';
 import 'package:fitness_app/features/chat/domain/entities/catalog_filter_metadata.dart';
 import 'package:fitness_app/features/chat/domain/entities/chat_tool_definition_entity.dart';
 import 'package:fitness_app/features/chat/domain/entities/message_entity.dart';
@@ -42,17 +41,15 @@ class SendMessageUseCase {
   static const int maxToolLoops = 4;
 
   Future<BaseResponse<ChatOutput>> call({
-    required String userId,
-    String? chatId,
+    required String chatId,
     required String userText,
-    void Function(String chatId)? onChatCreated,
+    required List<MessageEntity> conversationHistory,
   }) async {
     try {
       return await _sendMessage(
-        userId: userId,
         chatId: chatId,
         userText: userText,
-        onChatCreated: onChatCreated,
+        conversationHistory: conversationHistory,
       );
     } on AppFailure catch (failure) {
       return Error<ChatOutput>(failure);
@@ -63,41 +60,16 @@ class SendMessageUseCase {
   }
 
   Future<BaseResponse<ChatOutput>> _sendMessage({
-    required String userId,
-    String? chatId,
+    required String chatId,
     required String userText,
-    void Function(String chatId)? onChatCreated,
+    required List<MessageEntity> conversationHistory,
   }) async {
-    String activeChatId = chatId?.trim() ?? '';
-    if (activeChatId.isEmpty) {
-      final title = userText.length > 30
-          ? '${userText.substring(0, 30)}...'
-          : userText;
-      final createChatResult = await _chatRepository.createChat(
-        title: title,
-        userId: userId,
-      );
-      switch (createChatResult) {
-        case Success<ChatEntity>(data: final newChat):
-          activeChatId = newChat.id;
-          onChatCreated?.call(activeChatId);
-        case Error<ChatEntity>():
-          return Error(createChatResult.failure);
-      }
-    }
+    final activeChatId = chatId;
 
     final filterMetadata = await _getFilterMetadata();
-    final historyResult = await _chatRepository.getChatHistory(
-      chatId: activeChatId,
-      limit: 20,
-    );
-    final List<MessageEntity> previousMessages;
-    switch (historyResult) {
-      case Success(data: final messages):
-        previousMessages = messages.reversed.toList();
-      case Error(failure: final failure):
-        return Error(failure);
-    }
+    final previousMessages = conversationHistory.length > 20
+        ? conversationHistory.sublist(conversationHistory.length - 20)
+        : conversationHistory;
 
     final totalPreviousTokens = previousMessages.fold<int>(
       0,
@@ -333,20 +305,8 @@ class SendMessageUseCase {
     );
   }
 
-  Future<CatalogFilterMetadata> _getFilterMetadata() async {
-    try {
-      return await _catalogRepository.getFilterMetadata();
-    } catch (error, stackTrace) {
-      debugPrint('Chat catalog metadata unavailable => $error\n$stackTrace');
-      return const CatalogFilterMetadata(
-        muscleGroups: [],
-        difficulties: [],
-        equipments: [],
-        mealCategories: [],
-        mealAreas: [],
-      );
-    }
-  }
+  Future<CatalogFilterMetadata> _getFilterMetadata() =>
+      _catalogRepository.getFilterMetadata();
 
   String? _validatedChoice(Object? value, List<String> options) {
     if (value is! String) return null;

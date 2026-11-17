@@ -1501,6 +1501,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No previous conversations yet'**
   String get noChatYet;
+
+  /// No description provided for @chatLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'This conversation has reached the maximum length. Please start a new conversation.'**
+  String get chatLimitReached;
+
+  /// No description provided for @newConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'New Conversation'**
+  String get newConversation;
 }
 
 class _AppLocalizationsDelegate

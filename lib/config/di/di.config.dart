@@ -66,6 +66,8 @@ import '../../features/chat/data/repository/catalog_repository_impl.dart'
 import '../../features/chat/data/repository/chat_repository_impl.dart' as _i88;
 import '../../features/chat/domain/repository/catalog_repository.dart' as _i139;
 import '../../features/chat/domain/repository/chat_repository.dart' as _i477;
+import '../../features/chat/domain/use_cases/create_chat_use_case.dart'
+    as _i160;
 import '../../features/chat/domain/use_cases/send_message_use_case.dart'
     as _i461;
 import '../../features/chat/presentation/manager/chat_cubit.dart' as _i770;
@@ -162,6 +164,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i450.AppLocaleCubit>(
       () => _i450.AppLocaleCubit(gh<_i558.FlutterSecureStorage>()),
     );
+    gh.lazySingleton<_i427.ExercisesDatabase>(
+      () => _i427.ExercisesDatabase(gh<_i145.DatabaseStorageService>()),
+    );
+    gh.lazySingleton<_i994.MealsDatabase>(
+      () => _i994.MealsDatabase(gh<_i145.DatabaseStorageService>()),
+    );
     gh.lazySingleton<_i361.Dio>(
       () => dioModule.mealDio(),
       instanceName: 'mealDio',
@@ -176,11 +184,20 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i1064.ChatFirestoreDataSource>(
       () => _i1038.ChatFirestoreDataSourceImpl(gh<_i974.FirebaseFirestore>()),
     );
+    gh.lazySingleton<_i872.CatalogLocalDataSource>(
+      () => _i157.CatalogLocalDataSourceImpl(
+        gh<_i427.ExercisesDatabase>(),
+        gh<_i994.MealsDatabase>(),
+      ),
+    );
     gh.lazySingleton<_i264.AppInterceptors>(
       () => _i264.AppInterceptors(
         gh<_i558.FlutterSecureStorage>(),
         gh<_i760.AppAuthCubit>(),
       ),
+    );
+    gh.factory<_i139.CatalogRepository>(
+      () => _i204.CatalogRepositoryImpl(gh<_i872.CatalogLocalDataSource>()),
     );
     gh.lazySingleton<_i851.DatabaseAssetInstaller>(
       () => _i851.DatabaseAssetInstaller(
@@ -230,18 +247,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i27.ExerciseRemoteDataSource>(
       () => _i670.ExerciseRemoteDataSourceImpl(gh<_i248.ExerciseApiClient>()),
     );
-    gh.lazySingleton<_i427.ExercisesDatabase>(
-      () => _i427.ExercisesDatabase(
-        gh<_i145.DatabaseStorageService>(),
-        gh<_i851.DatabaseAssetInstaller>(),
-      ),
-    );
-    gh.lazySingleton<_i994.MealsDatabase>(
-      () => _i994.MealsDatabase(
-        gh<_i145.DatabaseStorageService>(),
-        gh<_i851.DatabaseAssetInstaller>(),
-      ),
-    );
     gh.factory<_i749.MealsRepo>(
       () => _i459.MealsRepoImpl(
         mealsRemoteDataSource: gh<_i452.MealsRemoteDataSource>(),
@@ -274,6 +279,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i487.ChatRemoteDataSource>(),
       ),
     );
+    gh.factory<_i461.SendMessageUseCase>(
+      () => _i461.SendMessageUseCase(
+        gh<_i139.CatalogRepository>(),
+        gh<_i477.ChatRepository>(),
+      ),
+    );
     gh.factory<_i514.GetMealDetailsUseCase>(
       () => _i514.GetMealDetailsUseCase(gh<_i749.MealsRepo>()),
     );
@@ -286,16 +297,22 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i170.ProfileLogoutUseCase>(),
       ),
     );
+    gh.factory<_i160.CreateChatUseCase>(
+      () => _i160.CreateChatUseCase(gh<_i477.ChatRepository>()),
+    );
     gh.factory<_i1012.ResetPasswordUserCase>(
       () => _i1012.ResetPasswordUserCase(gh<_i171.AuthRepo>()),
     );
     gh.factory<_i397.VerifyOtpUserCase>(
       () => _i397.VerifyOtpUserCase(gh<_i171.AuthRepo>()),
     );
-    gh.lazySingleton<_i872.CatalogLocalDataSource>(
-      () => _i157.CatalogLocalDataSourceImpl(
-        gh<_i427.ExercisesDatabase>(),
-        gh<_i994.MealsDatabase>(),
+    gh.factory<_i770.ChatCubit>(
+      () => _i770.ChatCubit(
+        gh<_i461.SendMessageUseCase>(),
+        gh<_i160.CreateChatUseCase>(),
+        gh<_i477.ChatRepository>(),
+        gh<_i139.CatalogRepository>(),
+        gh<_i558.FlutterSecureStorage>(),
       ),
     );
     gh.factory<_i773.MealsCubit>(
@@ -317,9 +334,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i559.GetMusclesByGroupUseCase>(
       () => _i559.GetMusclesByGroupUseCase(gh<_i628.ExerciseRepo>()),
     );
-    gh.factory<_i139.CatalogRepository>(
-      () => _i204.CatalogRepositoryImpl(gh<_i872.CatalogLocalDataSource>()),
-    );
     gh.factory<_i355.WorkoutCategoriesCubit>(
       () => _i355.WorkoutCategoriesCubit(
         gh<_i593.GetMuscleGroupsUseCase>(),
@@ -333,12 +347,6 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i944.ExerciseDetailsCubit(
         gh<_i615.GetDifficultyLevelsUseCase>(),
         gh<_i685.GetExercisesUseCase>(),
-      ),
-    );
-    gh.factory<_i461.SendMessageUseCase>(
-      () => _i461.SendMessageUseCase(
-        gh<_i139.CatalogRepository>(),
-        gh<_i477.ChatRepository>(),
       ),
     );
     gh.factory<_i1039.LoginUseCase>(
@@ -355,14 +363,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i839.ForgetPasswordUserCase>(),
         gh<_i397.VerifyOtpUserCase>(),
         gh<_i1012.ResetPasswordUserCase>(),
-      ),
-    );
-    gh.factory<_i770.ChatCubit>(
-      () => _i770.ChatCubit(
-        gh<_i461.SendMessageUseCase>(),
-        gh<_i477.ChatRepository>(),
-        gh<_i139.CatalogRepository>(),
-        gh<_i558.FlutterSecureStorage>(),
       ),
     );
     gh.factory<_i889.LoginCubit>(

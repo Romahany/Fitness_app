@@ -749,4 +749,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noChatYet => 'No previous conversations yet';
+
+  @override
+  String get chatLimitReached =>
+      'This conversation has reached the maximum length. Please start a new conversation.';
+
+  @override
+  String get newConversation => 'New Conversation';
 }

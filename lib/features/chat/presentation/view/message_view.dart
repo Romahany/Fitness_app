@@ -1,5 +1,6 @@
 import 'package:fitness_app/config/base/base_ui_event.dart';
 import 'package:fitness_app/config/di/di.dart';
+import 'package:fitness_app/config/localization/app_failure_message_mapper.dart';
 import 'package:fitness_app/core/constants/app_icons.dart';
 import 'package:fitness_app/core/constants/app_images.dart';
 import 'package:fitness_app/core/shared/base_ui_event_listener.dart';
@@ -120,6 +121,43 @@ class _MessageViewState extends State<MessageView> {
                 );
               }
 
+              if (chatState.messagesState.errorMessage != null) {
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24.w),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.error_outline_rounded,
+                          size: 36.sp,
+                          color: AppColors.primary,
+                        ),
+                        SizedBox(height: 12.h),
+                        Text(
+                          appFailureMessageMapper(
+                            chatState.messagesState.errorMessage!,
+                            l10n,
+                          ),
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        SizedBox(height: 16.h),
+                        TextButton.icon(
+                          onPressed: () {
+                            _chatCubit.onEvent(const LoadPreviousChatsEvent());
+                          },
+                          icon: const Icon(Icons.refresh_rounded),
+                          label: Text(l10n.tryAgain),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
               final uiMessages = chatState.messagesState.data ?? const [];
 
               if (uiMessages.isEmpty && !chatState.isSending) {
@@ -208,7 +246,7 @@ class _MessageViewState extends State<MessageView> {
                               SizedBox(width: 8.w),
                               Expanded(
                                 child: Text(
-                                  'اقتربت المحادثة من الحد الأقصى، يُفضل بدء محادثة جديدة.',
+                                  l10n.chatLimitReached,
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: AppColors.textPrimary,
                                     fontSize: 11.sp,
@@ -219,7 +257,7 @@ class _MessageViewState extends State<MessageView> {
                                 onPressed: () {
                                   _chatCubit.onEvent(const StartNewChatEvent());
                                 },
-                                child: const Text('محادثة جديدة'),
+                                child:  Text(l10n.newConversation),
                               ),
                             ],
                           ),

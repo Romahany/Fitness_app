@@ -743,4 +743,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get noChatYet => 'لا توجد محادثات سابقة بعد';
+
+  @override
+  String get chatLimitReached =>
+      'اقتربت هذه المحادثة من الحد الأقصى. يُرجى بدء محادثة جديدة.';
+
+  @override
+  String get newConversation => 'محادثة جديدة';
 }

@@ -3,7 +3,6 @@ import 'package:injectable/injectable.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 
-import 'database_asset_installer.dart';
 import 'database_storage_service.dart';
 
 /// Typed singleton wrapper for `exercises.db`.
@@ -13,11 +12,11 @@ import 'database_storage_service.dart';
 @lazySingleton
 class ExercisesDatabase {
   final DatabaseStorageService _storageService;
-  final DatabaseAssetInstaller _assetInstaller;
+
   Database? _db;
   Future<Database>? _databaseFuture;
 
-  ExercisesDatabase(this._storageService, this._assetInstaller);
+  ExercisesDatabase(this._storageService);
 
   /// Returns the active [Database] instance, opening it lazily if not already open.
   Future<Database> get database {
@@ -31,7 +30,6 @@ class ExercisesDatabase {
 
   Future<Database> _openDatabase() async {
     try {
-      await _assetInstaller.ensureDatabasesInstalled();
       final dir = await _storageService.getDatabasesPath();
       final dbPath = p.join(dir, 'exercises.db');
       if (kDebugMode) {

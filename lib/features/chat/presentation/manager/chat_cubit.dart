@@ -4,8 +4,10 @@ import 'package:fitness_app/config/base/base_response.dart';
 import 'package:fitness_app/config/base/base_state.dart';
 import 'package:fitness_app/config/base/base_ui_event.dart';
 import 'package:fitness_app/core/constants/storage_keys.dart';
+import 'package:fitness_app/features/chat/domain/entities/message_entity.dart';
 import 'package:fitness_app/features/chat/domain/repository/catalog_repository.dart';
 import 'package:fitness_app/features/chat/domain/repository/chat_repository.dart';
+import 'package:fitness_app/features/chat/domain/use_cases/create_chat_use_case.dart';
 import 'package:fitness_app/features/chat/domain/use_cases/send_message_use_case.dart';
 import 'package:fitness_app/features/chat/presentation/manager/helper_classes/class_ui_message.dart';
 import 'package:fitness_app/features/exercise/domain/entities/exercise_entity.dart';
@@ -19,12 +21,14 @@ import 'chat_state.dart';
 @injectable
 class ChatCubit extends BaseCubit<ChatState, BaseUiEvent> {
   final SendMessageUseCase _sendMessageUseCase;
+  final CreateChatUseCase _createChatUseCase;
   final ChatRepository _chatRepository;
   final CatalogRepository _catalogRepository;
   final FlutterSecureStorage _storage;
 
   ChatCubit(
     this._sendMessageUseCase,
+    this._createChatUseCase,
     this._chatRepository,
     this._catalogRepository,
     this._storage,
@@ -47,6 +51,7 @@ class ChatCubit extends BaseCubit<ChatState, BaseUiEvent> {
           state.copyWith(
             clearActiveChatId: true,
             messagesState: const BaseState(data: []),
+            conversationHistory: const [],
             showTokenLimitWarning: false,
           ),
         );
@@ -63,6 +68,7 @@ class ChatCubit extends BaseCubit<ChatState, BaseUiEvent> {
     final newText = text.trim();
     if (newText.isEmpty || state.isSending) return;
 
+    final conversationHistory = state.conversationHistory;
     final currentMessages = List<ChatUiMessage>.from(
       state.messagesState.data ?? const [],
     )..add(ChatUiMessage(isUser: true, text: newText));
@@ -74,14 +80,66 @@ class ChatCubit extends BaseCubit<ChatState, BaseUiEvent> {
       ),
     );
 
+    final userId = await _getUserId();
+    final String chatId;
+    final existingChatId = state.activeChatId;
+    if (existingChatId == null || existingChatId.trim().isEmpty) {
+      final createChatResult = await _createChatUseCase(
+        userId: userId,
+        userText: newText,
+      );
+      switch (createChatResult) {
+        case Success(data: final chat):
+          chatId = chat.id;
+          emit(state.copyWith(activeChatId: chatId));
+        case Error(failure: final failure):
+          emit(state.copyWith(isSending: false));
+          emitEvent(ShowFailureMessage(failure));
+          return;
+      }
+    } else {
+      chatId = existingChatId;
+    }
+
     final result = await _sendMessageUseCase(
-      userId: await _getUserId(),
-      chatId: state.activeChatId,
+      chatId: chatId,
       userText: newText,
+      conversationHistory: conversationHistory,
     );
 
     switch (result) {
       case Success(data: final output):
+        final recentHistory = conversationHistory.length > 20
+            ? conversationHistory.sublist(conversationHistory.length - 20)
+            : conversationHistory;
+        final previousTokens = recentHistory.fold<int>(
+          0,
+          (sum, message) => sum + message.tokensUsed,
+        );
+        final updatedHistory = List<MessageEntity>.from(conversationHistory)
+          ..add(
+            MessageEntity(
+              id: '',
+              chatId: output.chatId,
+              content: newText,
+              role: 'user',
+              createdAt: DateTime.now(),
+            ),
+          )
+          ..add(
+            MessageEntity(
+              id: '',
+              chatId: output.chatId,
+              content: output.answerText,
+              role: 'assistant',
+              exerciseIds: output.exercises
+                  .map((exercise) => exercise.id)
+                  .toList(),
+              mealIds: output.meals.map((meal) => meal.id).toList(),
+              tokensUsed: output.totalTokensUsed - previousTokens,
+              createdAt: DateTime.now(),
+            ),
+          );
         final updatedMessages = List<ChatUiMessage>.from(currentMessages)
           ..add(
             ChatUiMessage(
@@ -95,6 +153,7 @@ class ChatCubit extends BaseCubit<ChatState, BaseUiEvent> {
           state.copyWith(
             activeChatId: output.chatId,
             messagesState: state.messagesState.copyWith(data: updatedMessages),
+            conversationHistory: updatedHistory,
             isSending: false,
             showTokenLimitWarning: output.isNearTokenLimit,
           ),
@@ -142,6 +201,7 @@ class ChatCubit extends BaseCubit<ChatState, BaseUiEvent> {
     emit(
       state.copyWith(
         activeChatId: chatId,
+        conversationHistory: const [],
         messagesState: state.messagesState.copyWith(
           isLoading: true,
           errorMessage: null,
@@ -154,10 +214,11 @@ class ChatCubit extends BaseCubit<ChatState, BaseUiEvent> {
 
     switch (result) {
       case Success(data: final messages):
+        final chronologicalMessages = messages.reversed.toList();
         final uiMessages = <ChatUiMessage>[];
         int totalTokens = 0;
 
-        for (final m in messages.reversed) {
+        for (final m in chronologicalMessages) {
           totalTokens += m.tokensUsed;
 
           if (m.role != 'user' && m.role != 'assistant') continue;
@@ -183,6 +244,7 @@ class ChatCubit extends BaseCubit<ChatState, BaseUiEvent> {
         emit(
           state.copyWith(
             messagesState: BaseState(isLoading: false, data: uiMessages),
+            conversationHistory: chronologicalMessages,
             showTokenLimitWarning:
                 totalTokens >= (SendMessageUseCase.maxSessionTokens * 0.85),
           ),
@@ -218,6 +280,9 @@ class ChatCubit extends BaseCubit<ChatState, BaseUiEvent> {
             messagesState: isDeletingActive
                 ? const BaseState(data: [])
                 : state.messagesState,
+            conversationHistory: isDeletingActive
+                ? const []
+                : state.conversationHistory,
             showTokenLimitWarning: isDeletingActive
                 ? false
                 : state.showTokenLimitWarning,

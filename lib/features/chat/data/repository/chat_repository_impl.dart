@@ -20,7 +20,7 @@ import 'package:fitness_app/features/chat/domain/entities/message_entity.dart';
 
 import 'package:fitness_app/features/chat/domain/repository/chat_repository.dart';
 
-import '../../domain/coach/coach_prompt_and_schemas.dart';
+import '../datasource/coach/coach_prompt_and_schemas.dart';
 
 @Injectable(as: ChatRepository)
 class ChatRepositoryImpl implements ChatRepository {

@@ -307,6 +307,8 @@
   "dataNotAvailable": "Data is currently unavailable.",
   "typeYourMessage": "Enter Your Message",
   "hi": "Hi",
-  "noChatYet":"No previous conversations yet"
+  "noChatYet":"No previous conversations yet",
+  "chatLimitReached": "This conversation has reached the maximum length. Please start a new conversation.",
+  "newConversation": "New Conversation"
 
 }
